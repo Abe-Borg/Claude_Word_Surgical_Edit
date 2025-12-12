@@ -1832,7 +1832,47 @@ def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
     return p_xml
 
 
+def validate_instructions(instructions: Dict[str, Any]) -> None:
+    allowed_keys = {"create_styles", "apply_pStyle", "notes"}
+    extra = set(instructions.keys()) - allowed_keys
+    if extra:
+        raise ValueError(f"Invalid instruction keys: {extra}")
+
+    # Validate create_styles
+    seen_style_ids = set()
+    for sd in instructions.get("create_styles", []):
+        sid = sd.get("styleId")
+        if not sid or not isinstance(sid, str):
+            raise ValueError("create_styles entries must have styleId (string)")
+        if sid in seen_style_ids:
+            raise ValueError(f"Duplicate styleId: {sid}")
+        seen_style_ids.add(sid)
+
+        if sd.get("type") != "paragraph":
+            raise ValueError(f"Style {sid}: only paragraph styles allowed")
+
+        if "pPr" in sd:
+            raise ValueError(
+                f"Style {sid}: pPr not allowed in Option-2 (structure-only) mode"
+            )
+
+    # Validate apply_pStyle
+    seen_para = set()
+    for ap in instructions.get("apply_pStyle", []):
+        idx = ap.get("paragraph_index")
+        sid = ap.get("styleId")
+        if not isinstance(idx, int) or idx < 0:
+            raise ValueError(f"Invalid paragraph_index: {idx}")
+        if not isinstance(sid, str):
+            raise ValueError(f"Invalid styleId for paragraph {idx}")
+        if idx in seen_para:
+            raise ValueError(f"Duplicate paragraph_index: {idx}")
+        seen_para.add(idx)
+
+
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
+    validate_instructions(instructions)
+
     # Stability snapshot before
     snap = snapshot_stability(extract_dir)
 
@@ -1861,6 +1901,13 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
         sid = item["styleId"]
         idx_map[idx] = sid
 
+    # Capture original pPr (minus pStyle) for drift detection
+    original_ppr = {
+        i: ppr_without_pstyle(pb)
+        for i, pb in enumerate(para_blocks)
+    }
+
+
     # Apply
     for idx, sid in idx_map.items():
         if idx < 0 or idx >= len(para_blocks):
@@ -1869,6 +1916,15 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
             # hard fail: we don't allow touching sectPr paragraph
             raise ValueError(f"Refusing to apply style to paragraph {idx} because it contains sectPr.")
         para_blocks[idx] = apply_pstyle_to_paragraph_block(para_blocks[idx], sid)
+
+    # Verify no pPr drift (except pStyle)
+    for i, pb in enumerate(para_blocks):
+        if original_ppr.get(i, "") != ppr_without_pstyle(pb):
+            raise ValueError(
+                f"Visual drift detected in paragraph {i}: "
+                f"paragraph properties changed outside pStyle"
+            )
+
 
     # Rebuild document.xml text with minimal change: replace paragraph blocks in-place
     out_parts = []
@@ -1986,6 +2042,18 @@ def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
     p_xml = re.sub(r'(<w:p\b[^>]*>)', rf'\1<w:pPr><w:pStyle w:val="{styleId}"/></w:pPr>', p_xml, count=1)
     return p_xml
 
+def sanitize_style_def(sd: Dict[str, Any]) -> Dict[str, Any]:
+    # Option-2 lock: styles must NOT define paragraph properties
+    clean = dict(sd)
+    clean.pop("pPr", None)   # REMOVE paragraph formatting
+    return clean
+
+style_blocks = [
+    build_style_xml_block(sanitize_style_def(sd))
+    for sd in style_defs
+]
+
+
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     # Stability snapshot before
     snap = snapshot_stability(extract_dir)
@@ -1995,7 +2063,13 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     styles_text = styles_path.read_text(encoding="utf-8")
 
     style_defs = instructions.get("create_styles") or []
-    style_blocks = [build_style_xml_block(sd) for sd in style_defs]
+
+    style_blocks = [
+    build_style_xml_block(sanitize_style_def(sd))
+    for sd in style_defs
+    ]
+
+    
     styles_new = insert_styles_into_styles_xml(styles_text, style_blocks)
     styles_path.write_text(styles_new, encoding="utf-8")
 
@@ -2044,6 +2118,19 @@ def snapshot_doc_rels_hash(extract_dir: Path) -> str:
     if not rels_path.exists():
         return ""
     return sha256_bytes(rels_path.read_bytes())
+
+def ppr_without_pstyle(p_xml: str) -> str:
+    """
+    Extract paragraph properties excluding pStyle.
+    Used to assert no visual drift.
+    """
+    m = re.search(r"<w:pPr\b[\s\S]*?</w:pPr>", p_xml)
+    if not m:
+        return ""
+    ppr = m.group(0)
+    # remove pStyle only
+    ppr = re.sub(r"<w:pStyle\b[^>]*/>", "", ppr)
+    return ppr
 
 
 if __name__ == "__main__":
