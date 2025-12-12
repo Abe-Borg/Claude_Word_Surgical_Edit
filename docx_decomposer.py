@@ -1310,6 +1310,8 @@ def sha256_text(s: str) -> str:
 class StabilitySnapshot:
     header_footer_hashes: Dict[str, str]
     sectpr_hash: str
+    doc_rels_hash: str
+
 
 def snapshot_headers_footers(extract_dir: Path) -> Dict[str, str]:
     wf = extract_dir / "word"
@@ -1335,7 +1337,9 @@ def snapshot_stability(extract_dir: Path) -> StabilitySnapshot:
     return StabilitySnapshot(
         header_footer_hashes=snapshot_headers_footers(extract_dir),
         sectpr_hash=sha256_text(sectpr),
+        doc_rels_hash=snapshot_doc_rels_hash(extract_dir),
     )
+
 
 ALLOWED_EDIT_PATHS = {
     "word/document.xml",
@@ -1381,10 +1385,8 @@ def apply_llm_edits(extract_dir: Path, edits_json: dict, diff_dir: Path) -> None
         diff_path.write_text("".join(diff), encoding="utf-8")
 
 def verify_stability(extract_dir: Path, snap: StabilitySnapshot) -> None:
-    # Headers/footers must not change
     current_hf = snapshot_headers_footers(extract_dir)
     if current_hf != snap.header_footer_hashes:
-        # show which changed
         changed = []
         all_keys = set(current_hf.keys()) | set(snap.header_footer_hashes.keys())
         for k in sorted(all_keys):
@@ -1392,11 +1394,16 @@ def verify_stability(extract_dir: Path, snap: StabilitySnapshot) -> None:
                 changed.append(k)
         raise ValueError(f"Header/footer stability check FAILED. Changed: {changed}")
 
-    # sectPr must not change
     doc_text = (extract_dir / "word" / "document.xml").read_text(encoding="utf-8")
     current_sectpr = extract_sectpr_block(doc_text)
     if sha256_text(current_sectpr) != snap.sectpr_hash:
         raise ValueError("Section properties (w:sectPr) stability check FAILED.")
+
+    # NEW: relationships must be stable too (header/footer binding lives here)
+    current_rels = snapshot_doc_rels_hash(extract_dir)
+    if current_rels != snap.doc_rels_hash:
+        raise ValueError("document.xml.rels stability check FAILED (can break header/footer).")
+
 
 def build_llm_bundle(extract_dir: Path) -> dict:
     paths = [
@@ -1785,21 +1792,45 @@ def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
     if "<w:sectPr" in p_xml:
         return p_xml
 
-    # if pPr exists, add or replace pStyle within it
-    if "<w:pPr" in p_xml:
-        if re.search(r"<w:pStyle\b", p_xml):
-            # replace existing pStyle val
-            p_xml = re.sub(r'(<w:pStyle\b[^>]*w:val=")([^"]+)(")',
-                           rf'\g<1>{styleId}\g<3>', p_xml, count=1)
-            return p_xml
-
-        # insert pStyle right after <w:pPr...>
-        p_xml = re.sub(r'(<w:pPr\b[^>]*>)', rf'\1<w:pStyle w:val="{styleId}"/>', p_xml, count=1)
+    # If pStyle already exists, replace its value
+    if re.search(r"<w:pStyle\b", p_xml):
+        p_xml = re.sub(
+            r'(<w:pStyle\b[^>]*w:val=")([^"]+)(")',
+            rf'\g<1>{styleId}\g<3>',
+            p_xml,
+            count=1
+        )
         return p_xml
 
-    # no pPr: create it right after <w:p ...>
-    p_xml = re.sub(r'(<w:p\b[^>]*>)', rf'\1<w:pPr><w:pStyle w:val="{styleId}"/></w:pPr>', p_xml, count=1)
+    # Handle self-closing pPr: <w:pPr/> or <w:pPr />
+    if re.search(r"<w:pPr\b[^>]*/>", p_xml):
+        p_xml = re.sub(
+            r"<w:pPr\b[^>]*/>",
+            rf'<w:pPr><w:pStyle w:val="{styleId}"/></w:pPr>',
+            p_xml,
+            count=1
+        )
+        return p_xml
+
+    # If pPr exists as a normal open/close element, insert pStyle right after opening tag
+    if "<w:pPr" in p_xml:
+        p_xml = re.sub(
+            r'(<w:pPr\b[^>]*>)',
+            rf'\1<w:pStyle w:val="{styleId}"/>',
+            p_xml,
+            count=1
+        )
+        return p_xml
+
+    # No pPr at all: create one right after <w:p ...>
+    p_xml = re.sub(
+        r'(<w:p\b[^>]*>)',
+        rf'\1<w:pPr><w:pStyle w:val="{styleId}"/></w:pPr>',
+        p_xml,
+        count=1
+    )
     return p_xml
+
 
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     # Stability snapshot before
@@ -2008,5 +2039,13 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     verify_stability(extract_dir, snap)
 
 
+def snapshot_doc_rels_hash(extract_dir: Path) -> str:
+    rels_path = extract_dir / "word" / "_rels" / "document.xml.rels"
+    if not rels_path.exists():
+        return ""
+    return sha256_bytes(rels_path.read_bytes())
+
+
 if __name__ == "__main__":
     main()
+
