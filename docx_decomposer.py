@@ -1881,7 +1881,13 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     styles_text = styles_path.read_text(encoding="utf-8")
 
     style_defs = instructions.get("create_styles") or []
-    style_blocks = [build_style_xml_block(sd) for sd in style_defs]
+
+    style_blocks = [
+    build_style_xml_block(sanitize_style_def(sd))
+    for sd in style_defs
+    ]
+
+    
     styles_new = insert_styles_into_styles_xml(styles_text, style_blocks)
     styles_path.write_text(styles_new, encoding="utf-8")
 
@@ -2047,11 +2053,6 @@ def sanitize_style_def(sd: Dict[str, Any]) -> Dict[str, Any]:
     clean = dict(sd)
     clean.pop("pPr", None)   # REMOVE paragraph formatting
     return clean
-
-style_blocks = [
-    build_style_xml_block(sanitize_style_def(sd))
-    for sd in style_defs
-]
 
 
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
