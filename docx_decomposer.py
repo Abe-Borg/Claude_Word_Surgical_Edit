@@ -1798,7 +1798,7 @@ def extract_paragraph_rpr_inner(p_xml: str) -> str:
     return ""
 
 
-def derive_style_def_from_paragraph(styleId: str, name: str, p_xml: str, basedOn: Optional[str] = None) -> Dict[str, Any]:
+def derive_style_def_from_paragraph(styleId: str, name: str, p_xml: str, based_on: Optional[str] = None) -> Dict[str, Any]:
     """Derive a paragraph style definition from an exemplar paragraph block."""
     ppr_inner = extract_paragraph_ppr_inner(p_xml)
     rpr_inner = extract_paragraph_rpr_inner(p_xml)
@@ -1806,7 +1806,7 @@ def derive_style_def_from_paragraph(styleId: str, name: str, p_xml: str, basedOn
         "styleId": styleId,
         "name": name,
         "type": "paragraph",
-        "basedOn": basedOn,
+        "based_on": based_on,
         "pPr_inner": ppr_inner,
         "rPr_inner": rpr_inner,
     }
