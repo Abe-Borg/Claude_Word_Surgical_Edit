@@ -26,6 +26,11 @@ You will be given a slim JSON bundle that summarizes a Word document’s paragra
 You MUST NOT output raw DOCX XML.
 You MUST output ONLY JSON instructions that my local script will apply.
 
+Absolute rule:
+You must NOT include pPr in create_styles.
+You are labeling structure only.
+Any attempt to specify paragraph alignment, indentation, spacing, or numbering is forbidden.
+
 Goal: render-perfect output while normalizing CSI semantics using paragraph styles (w:pStyle).
 
 Rules:
@@ -1870,6 +1875,9 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         seen_para.add(idx)
 
 
+# OPTION 2 LOCK:
+# This function MUST NOT change visual formatting.
+# Only w:pStyle insertion and semantic style creation are allowed.
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     validate_instructions(instructions)
 
