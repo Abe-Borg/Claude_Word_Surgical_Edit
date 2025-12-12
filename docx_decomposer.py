@@ -1713,84 +1713,123 @@ def build_slim_bundle(extract_dir: Path) -> Dict[str, Any]:
 
 
 def build_style_xml_block(style_def: Dict[str, Any]) -> str:
-    """
-    Build a minimal <w:style> block string. This is deterministic and small.
-    It won’t include every possible property — just what you supply.
-    """
-    styleId = style_def["styleId"]
-    name = style_def.get("name") or styleId
-    basedOn = style_def.get("basedOn")
-    st_type = style_def.get("type", "paragraph")
+    """Build a <w:style> block. Formatting is supplied ONLY by local derivation."""
+    sid = style_def.get("styleId")
+    name = style_def.get("name") or sid
+    based_on = style_def.get("basedOn")
+    stype = style_def.get("type") or "paragraph"
+    ppr_inner = style_def.get("pPr_inner") or ""
+    rpr_inner = style_def.get("rPr_inner") or ""
 
-    pPr = style_def.get("pPr") or {}
-    rPr = style_def.get("rPr") or {}
+    if not sid or not isinstance(sid, str):
+        raise ValueError("styleId is required")
+    if stype != "paragraph":
+        raise ValueError("Only paragraph styles are supported")
 
-    parts = []
-    parts.append(f'<w:style w:type="{st_type}" w:styleId="{styleId}">')
-    parts.append(f'  <w:name w:val="{name}"/>')
-    if basedOn:
-        parts.append(f'  <w:basedOn w:val="{basedOn}"/>')
-    parts.append(f'  <w:qFormat/>')
+    parts: List[str] = []
+    parts.append(f'<w:style w:type="{stype}" w:styleId="{sid}">')
+    parts.append(f'  <w:name w:val="{xml_escape(name)}"/>')
+    if based_on:
+        parts.append(f'  <w:basedOn w:val="{xml_escape(based_on)}"/>')
+    parts.append('  <w:qFormat/>')
 
-    # pPr
-    ppr_lines = []
-    jc = pPr.get("jc")
-    if jc:
-        ppr_lines.append(f'    <w:jc w:val="{jc}"/>')
+    # Paragraph properties (captured from exemplar)
+    if ppr_inner.strip():
+        parts.append('  <w:pPr>')
+        parts.append(ppr_inner.strip())
+        parts.append('  </w:pPr>')
 
-    spacing = pPr.get("spacing") or {}
-    if spacing:
-        attrs = " ".join([f'w:{k}="{v}"' for k, v in spacing.items() if v])
-        ppr_lines.append(f'    <w:spacing {attrs}/>')
+    # Run properties (captured from exemplar)
+    if rpr_inner.strip():
+        parts.append('  <w:rPr>')
+        parts.append(rpr_inner.strip())
+        parts.append('  </w:rPr>')
 
-    ind = pPr.get("ind") or {}
-    if ind:
-        attrs = " ".join([f'w:{k}="{v}"' for k, v in ind.items() if v])
-        ppr_lines.append(f'    <w:ind {attrs}/>')
+    parts.append('</w:style>')
+    return "\n".join(parts) + "\n"
 
-    if ppr_lines:
-        parts.append("  <w:pPr>")
-        parts.extend(ppr_lines)
-        parts.append("  </w:pPr>")
 
-    # rPr
-    rpr_lines = []
-    rFonts = rPr.get("rFonts") or {}
-    if rFonts:
-        attrs = " ".join([f'w:{k}="{v}"' for k, v in rFonts.items() if v])
-        rpr_lines.append(f'    <w:rFonts {attrs}/>')
+def xml_escape(s: str) -> str:
+    return (s.replace("&", "&amp;")
+             .replace("<", "&lt;")
+             .replace(">", "&gt;")
+             .replace('"', "&quot;")
+             .replace("'", "&apos;"))
 
-    if rPr.get("sz"):
-        rpr_lines.append(f'    <w:sz w:val="{rPr["sz"]}"/>')
-    if rPr.get("b") is True:
-        rpr_lines.append(f'    <w:b/>')
-    if rPr.get("i") is True:
-        rpr_lines.append(f'    <w:i/>')
-    if rPr.get("u"):
-        # accept string like "single" or True
-        if rPr["u"] is True:
-            rpr_lines.append(f'    <w:u/>')
-        else:
-            rpr_lines.append(f'    <w:u w:val="{rPr["u"]}"/>')
-    if rPr.get("color"):
-        rpr_lines.append(f'    <w:color w:val="{rPr["color"]}"/>')
 
-    if rpr_lines:
-        parts.append("  <w:rPr>")
-        parts.extend(rpr_lines)
-        parts.append("  </w:rPr>")
+def strip_pstyle_from_paragraph(p_xml: str) -> str:
+    # Remove any <w:pStyle .../> tags for drift comparison
+    return re.sub(r"<w:pStyle\b[^>]*/>", "", p_xml)
 
-    parts.append("</w:style>")
-    return "\n".join(parts)
+
+def extract_paragraph_ppr_inner(p_xml: str) -> str:
+    """Return inner XML of <w:pPr>..</w:pPr> in a paragraph, or '' if none."""
+    # Self-closing
+    if re.search(r"<w:pPr\b[^>]*/>", p_xml):
+        return ""
+    m = re.search(r"<w:pPr\b[^>]*>(.*?)</w:pPr>", p_xml, flags=re.S)
+    if not m:
+        return ""
+    inner = m.group(1)
+    # Remove style assignment and numbering from captured style attributes
+    inner = re.sub(r"<w:pStyle\b[^>]*/>", "", inner)
+    inner = re.sub(r"<w:numPr\b[^>]*>.*?</w:numPr>", "", inner, flags=re.S)
+    return inner.strip()
+
+
+def extract_paragraph_rpr_inner(p_xml: str) -> str:
+    """Return inner XML of the first meaningful <w:rPr> inside a paragraph, or '' if none."""
+    # Find first run that contains a text node
+    for rm in re.finditer(r"<w:r\b[^>]*>(.*?)</w:r>", p_xml, flags=re.S):
+        run_inner = rm.group(1)
+        if "<w:t" not in run_inner:
+            continue
+        m = re.search(r"<w:rPr\b[^>]*>(.*?)</w:rPr>", run_inner, flags=re.S)
+        if m:
+            return m.group(1).strip()
+        # If the run has no rPr, keep searching
+    return ""
+
+
+def derive_style_def_from_paragraph(styleId: str, name: str, p_xml: str, basedOn: Optional[str] = None) -> Dict[str, Any]:
+    """Derive a paragraph style definition from an exemplar paragraph block."""
+    ppr_inner = extract_paragraph_ppr_inner(p_xml)
+    rpr_inner = extract_paragraph_rpr_inner(p_xml)
+    return {
+        "styleId": styleId,
+        "name": name,
+        "type": "paragraph",
+        "basedOn": basedOn,
+        "pPr_inner": ppr_inner,
+        "rPr_inner": rpr_inner,
+    }
+
 
 def insert_styles_into_styles_xml(styles_xml_text: str, style_blocks: List[str]) -> str:
     if not style_blocks:
         return styles_xml_text
+
+    # Idempotence: skip inserting styles that already exist in styles.xml
+    existing = set(re.findall(r'w:styleId="([^"]+)"', styles_xml_text))
+    filtered: List[str] = []
+    for sb in style_blocks:
+        m = re.search(r'w:styleId="([^"]+)"', sb)
+        if not m:
+            raise ValueError("Style block missing w:styleId")
+        sid = m.group(1)
+        if sid in existing:
+            continue
+        filtered.append(sb)
+
+    if not filtered:
+        return styles_xml_text
+
     insert_point = styles_xml_text.rfind("</w:styles>")
     if insert_point == -1:
         raise ValueError("styles.xml does not contain </w:styles>")
-    insertion = "\n" + "\n".join(style_blocks) + "\n"
+    insertion = "\n" + "\n".join(filtered) + "\n"
     return styles_xml_text[:insert_point] + insertion + styles_xml_text[insert_point:]
+
 
 def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
     # refuse to touch sectPr paragraph
@@ -1843,9 +1882,12 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
     if extra:
         raise ValueError(f"Invalid instruction keys: {extra}")
 
-    # Validate create_styles
+    # Validate create_styles (LLM must NOT provide formatting; only exemplar mapping)
     seen_style_ids = set()
     for sd in instructions.get("create_styles", []):
+        if not isinstance(sd, dict):
+            raise ValueError("create_styles entries must be objects")
+
         sid = sd.get("styleId")
         if not sid or not isinstance(sid, str):
             raise ValueError("create_styles entries must have styleId (string)")
@@ -1853,17 +1895,37 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
             raise ValueError(f"Duplicate styleId: {sid}")
         seen_style_ids.add(sid)
 
-        if sd.get("type") != "paragraph":
-            raise ValueError(f"Style {sid}: only paragraph styles allowed")
+        # LLM is forbidden from specifying formatting directly
+        if "pPr" in sd or "rPr" in sd or "pPr_inner" in sd or "rPr_inner" in sd:
+            raise ValueError(f"Style {sid}: LLM formatting fields are forbidden (pPr/rPr). Use derive_from_paragraph_index only.")
 
-        if "pPr" in sd:
-            raise ValueError(
-                f"Style {sid}: pPr not allowed in Option-2 (structure-only) mode"
-            )
+        allowed_style_fields = {"styleId", "name", "type", "derive_from_paragraph_index", "basedOn", "role"}
+        extra_style_fields = set(sd.keys()) - allowed_style_fields
+        if extra_style_fields:
+            raise ValueError(f"Style {sid}: invalid fields: {extra_style_fields}")
+
+        stype = sd.get("type", "paragraph")
+        if stype != "paragraph":
+            raise ValueError(f"Style {sid}: only paragraph styles are supported (type='paragraph').")
+
+        src = sd.get("derive_from_paragraph_index")
+        if src is None or not isinstance(src, int) or src < 0:
+            raise ValueError(f"Style {sid}: derive_from_paragraph_index must be a non-negative integer.")
+
+        if "basedOn" in sd and sd["basedOn"] is not None and not isinstance(sd["basedOn"], str):
+            raise ValueError(f"Style {sid}: basedOn must be a string if provided.")
+
+        if "name" in sd and sd["name"] is not None and not isinstance(sd["name"], str):
+            raise ValueError(f"Style {sid}: name must be a string if provided.")
+
+        if "role" in sd and sd["role"] is not None and not isinstance(sd["role"], str):
+            raise ValueError(f"Style {sid}: role must be a string if provided.")
 
     # Validate apply_pStyle
     seen_para = set()
     for ap in instructions.get("apply_pStyle", []):
+        if not isinstance(ap, dict):
+            raise ValueError("apply_pStyle entries must be objects")
         idx = ap.get("paragraph_index")
         sid = ap.get("styleId")
         if not isinstance(idx, int) or idx < 0:
@@ -1875,39 +1937,45 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         seen_para.add(idx)
 
 
-# OPTION 2 LOCK:
-# This function MUST NOT change visual formatting.
-# Only w:pStyle insertion and semantic style creation are allowed.
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     validate_instructions(instructions)
 
     # Stability snapshot before
     snap = snapshot_stability(extract_dir)
 
-    # 1) Create styles
+    # Load styles.xml and document.xml
     styles_path = extract_dir / "word" / "styles.xml"
     styles_text = styles_path.read_text(encoding="utf-8")
 
-    style_defs = instructions.get("create_styles") or []
-
-    style_blocks = [
-    build_style_xml_block(sanitize_style_def(sd))
-    for sd in style_defs
-    ]
-
-    
-    styles_new = insert_styles_into_styles_xml(styles_text, style_blocks)
-    styles_path.write_text(styles_new, encoding="utf-8")
-
-    # 2) Apply pStyle to paragraphs by index
     doc_path = extract_dir / "word" / "document.xml"
     doc_text = doc_path.read_text(encoding="utf-8")
 
-    # Split into blocks while preserving original untouched regions
+    # Split document.xml into paragraph blocks
     blocks = list(iter_paragraph_xml_blocks(doc_text))
     para_blocks = [b[2] for b in blocks]
+    original_para_blocks = list(para_blocks)
 
-    # Create map index->styleId
+    # 1) Create derived styles (formatting captured locally from exemplar paragraphs)
+    style_defs = instructions.get("create_styles") or []
+    derived_blocks: List[str] = []
+    for sd in style_defs:
+        style_id = sd["styleId"]
+        style_name = sd.get("name") or style_id
+        src_idx = sd["derive_from_paragraph_index"]
+        based_on = sd.get("basedOn")
+
+        if src_idx >= len(para_blocks):
+            raise ValueError(f"Style {style_id}: derive_from_paragraph_index out of range: {src_idx}")
+
+        exemplar_p = para_blocks[src_idx]
+        derived_def = derive_style_def_from_paragraph(style_id, style_name, exemplar_p, based_on=based_on)
+        derived_blocks.append(build_style_xml_block(derived_def))
+
+    styles_new = insert_styles_into_styles_xml(styles_text, derived_blocks)
+    if styles_new != styles_text:
+        styles_path.write_text(styles_new, encoding="utf-8")
+
+    # 2) Apply paragraph styles by index (pStyle insertion ONLY)
     apply_list = instructions.get("apply_pStyle") or []
     idx_map: Dict[int, str] = {}
     for item in apply_list:
@@ -1916,34 +1984,32 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
         idx_map[idx] = sid
 
     # Capture original pPr (minus pStyle) for drift detection
-    original_ppr = {
-        i: ppr_without_pstyle(pb)
-        for i, pb in enumerate(para_blocks)
-    }
-
+    original_ppr = {i: ppr_without_pstyle(pb) for i, pb in enumerate(para_blocks)}
 
     # Apply
     for idx, sid in idx_map.items():
         if idx < 0 or idx >= len(para_blocks):
             raise ValueError(f"paragraph_index out of range: {idx}")
         if paragraph_contains_sectpr(para_blocks[idx]):
-            # hard fail: we don't allow touching sectPr paragraph
             raise ValueError(f"Refusing to apply style to paragraph {idx} because it contains sectPr.")
         para_blocks[idx] = apply_pstyle_to_paragraph_block(para_blocks[idx], sid)
 
-    # Verify no pPr drift (except pStyle)
+    # STEP 4: Full paragraph drift check (only pStyle may differ)
+    for idx in idx_map.keys():
+        before = strip_pstyle_from_paragraph(original_para_blocks[idx])
+        after = strip_pstyle_from_paragraph(para_blocks[idx])
+        if before != after:
+            raise ValueError(f"Paragraph drift detected at index {idx}: changes beyond <w:pStyle>.")
+
+    # Paragraph-level pPr drift check (only pStyle change allowed inside pPr)
     for i, pb in enumerate(para_blocks):
-        if original_ppr.get(i, "") != ppr_without_pstyle(pb):
-            raise ValueError(
-                f"Visual drift detected in paragraph {i}: "
-                f"paragraph properties changed outside pStyle"
-            )
+        if original_ppr[i] != ppr_without_pstyle(pb):
+            raise ValueError(f"Paragraph properties drift detected at index {i} (beyond w:pStyle).")
 
-
-    # Rebuild document.xml text with minimal change: replace paragraph blocks in-place
-    out_parts = []
+    # Reassemble document.xml with updated paragraph blocks
+    out_parts: List[str] = []
     last_end = 0
-    for i, (s, e, _old) in enumerate(blocks):
+    for i, (s, e, _p) in enumerate(blocks):
         out_parts.append(doc_text[last_end:s])
         out_parts.append(para_blocks[i])
         last_end = e
@@ -1951,110 +2017,11 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     doc_new = "".join(out_parts)
     doc_path.write_text(doc_new, encoding="utf-8")
 
-    # Verify stability (headers/footers + sectPr)
+    # Verify stability (headers/footers + sectPr + rels)
     verify_stability(extract_dir, snap)
 
 
-def build_style_xml_block(style_def: Dict[str, Any]) -> str:
-    """
-    Build a minimal <w:style> block string. This is deterministic and small.
-    It won’t include every possible property — just what you supply.
-    """
-    styleId = style_def["styleId"]
-    name = style_def.get("name") or styleId
-    basedOn = style_def.get("basedOn")
-    st_type = style_def.get("type", "paragraph")
 
-    pPr = style_def.get("pPr") or {}
-    rPr = style_def.get("rPr") or {}
-
-    parts = []
-    parts.append(f'<w:style w:type="{st_type}" w:styleId="{styleId}">')
-    parts.append(f'  <w:name w:val="{name}"/>')
-    if basedOn:
-        parts.append(f'  <w:basedOn w:val="{basedOn}"/>')
-    parts.append(f'  <w:qFormat/>')
-
-    # pPr
-    ppr_lines = []
-    jc = pPr.get("jc")
-    if jc:
-        ppr_lines.append(f'    <w:jc w:val="{jc}"/>')
-
-    spacing = pPr.get("spacing") or {}
-    if spacing:
-        attrs = " ".join([f'w:{k}="{v}"' for k, v in spacing.items() if v])
-        ppr_lines.append(f'    <w:spacing {attrs}/>')
-
-    ind = pPr.get("ind") or {}
-    if ind:
-        attrs = " ".join([f'w:{k}="{v}"' for k, v in ind.items() if v])
-        ppr_lines.append(f'    <w:ind {attrs}/>')
-
-    if ppr_lines:
-        parts.append("  <w:pPr>")
-        parts.extend(ppr_lines)
-        parts.append("  </w:pPr>")
-
-    # rPr
-    rpr_lines = []
-    rFonts = rPr.get("rFonts") or {}
-    if rFonts:
-        attrs = " ".join([f'w:{k}="{v}"' for k, v in rFonts.items() if v])
-        rpr_lines.append(f'    <w:rFonts {attrs}/>')
-
-    if rPr.get("sz"):
-        rpr_lines.append(f'    <w:sz w:val="{rPr["sz"]}"/>')
-    if rPr.get("b") is True:
-        rpr_lines.append(f'    <w:b/>')
-    if rPr.get("i") is True:
-        rpr_lines.append(f'    <w:i/>')
-    if rPr.get("u"):
-        # accept string like "single" or True
-        if rPr["u"] is True:
-            rpr_lines.append(f'    <w:u/>')
-        else:
-            rpr_lines.append(f'    <w:u w:val="{rPr["u"]}"/>')
-    if rPr.get("color"):
-        rpr_lines.append(f'    <w:color w:val="{rPr["color"]}"/>')
-
-    if rpr_lines:
-        parts.append("  <w:rPr>")
-        parts.extend(rpr_lines)
-        parts.append("  </w:rPr>")
-
-    parts.append("</w:style>")
-    return "\n".join(parts)
-
-def insert_styles_into_styles_xml(styles_xml_text: str, style_blocks: List[str]) -> str:
-    if not style_blocks:
-        return styles_xml_text
-    insert_point = styles_xml_text.rfind("</w:styles>")
-    if insert_point == -1:
-        raise ValueError("styles.xml does not contain </w:styles>")
-    insertion = "\n" + "\n".join(style_blocks) + "\n"
-    return styles_xml_text[:insert_point] + insertion + styles_xml_text[insert_point:]
-
-def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
-    # refuse to touch sectPr paragraph
-    if "<w:sectPr" in p_xml:
-        return p_xml
-
-    # if pPr exists, add or replace pStyle within it
-    if "<w:pPr" in p_xml:
-        if re.search(r"<w:pStyle\b", p_xml):
-            # replace existing pStyle val
-            p_xml = re.sub(r'(<w:pStyle\b[^>]*w:val=")([^"]+)(")',
-                           rf'\g<1>{styleId}\g<3>', p_xml, count=1)
-            return p_xml
-
-        # insert pStyle right after <w:pPr...>
-        p_xml = re.sub(r'(<w:pPr\b[^>]*>)', rf'\1<w:pStyle w:val="{styleId}"/>', p_xml, count=1)
-        return p_xml
-
-    # no pPr: create it right after <w:p ...>
-    p_xml = re.sub(r'(<w:p\b[^>]*>)', rf'\1<w:pPr><w:pStyle w:val="{styleId}"/></w:pPr>', p_xml, count=1)
-    return p_xml
 
 def sanitize_style_def(sd: Dict[str, Any]) -> Dict[str, Any]:
     # Option-2 lock: styles must NOT define paragraph properties
@@ -2063,63 +2030,6 @@ def sanitize_style_def(sd: Dict[str, Any]) -> Dict[str, Any]:
     return clean
 
 
-def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
-    # Stability snapshot before
-    snap = snapshot_stability(extract_dir)
-
-    # 1) Create styles
-    styles_path = extract_dir / "word" / "styles.xml"
-    styles_text = styles_path.read_text(encoding="utf-8")
-
-    style_defs = instructions.get("create_styles") or []
-
-    style_blocks = [
-    build_style_xml_block(sanitize_style_def(sd))
-    for sd in style_defs
-    ]
-
-    
-    styles_new = insert_styles_into_styles_xml(styles_text, style_blocks)
-    styles_path.write_text(styles_new, encoding="utf-8")
-
-    # 2) Apply pStyle to paragraphs by index
-    doc_path = extract_dir / "word" / "document.xml"
-    doc_text = doc_path.read_text(encoding="utf-8")
-
-    # Split into blocks while preserving original untouched regions
-    blocks = list(iter_paragraph_xml_blocks(doc_text))
-    para_blocks = [b[2] for b in blocks]
-
-    # Create map index->styleId
-    apply_list = instructions.get("apply_pStyle") or []
-    idx_map: Dict[int, str] = {}
-    for item in apply_list:
-        idx = int(item["paragraph_index"])
-        sid = item["styleId"]
-        idx_map[idx] = sid
-
-    # Apply
-    for idx, sid in idx_map.items():
-        if idx < 0 or idx >= len(para_blocks):
-            raise ValueError(f"paragraph_index out of range: {idx}")
-        if paragraph_contains_sectpr(para_blocks[idx]):
-            # hard fail: we don't allow touching sectPr paragraph
-            raise ValueError(f"Refusing to apply style to paragraph {idx} because it contains sectPr.")
-        para_blocks[idx] = apply_pstyle_to_paragraph_block(para_blocks[idx], sid)
-
-    # Rebuild document.xml text with minimal change: replace paragraph blocks in-place
-    out_parts = []
-    last_end = 0
-    for i, (s, e, _old) in enumerate(blocks):
-        out_parts.append(doc_text[last_end:s])
-        out_parts.append(para_blocks[i])
-        last_end = e
-    out_parts.append(doc_text[last_end:])
-    doc_new = "".join(out_parts)
-    doc_path.write_text(doc_new, encoding="utf-8")
-
-    # Verify stability (headers/footers + sectPr)
-    verify_stability(extract_dir, snap)
 
 
 def snapshot_doc_rels_hash(extract_dir: Path) -> str:
