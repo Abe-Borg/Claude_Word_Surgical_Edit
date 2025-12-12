@@ -1211,6 +1211,9 @@ def main():
 
     parser.add_argument("--output-docx", default=None, help="Output .docx path for reconstructed file")
 
+    parser.add_argument("--use-extract-dir", default=None, help="Use an existing extracted folder (skip extract/delete)")
+
+
     # ✅ Parse args FIRST
     args = parser.parse_args()
 
@@ -1222,11 +1225,18 @@ def main():
     # Create decomposer
     decomposer = DocxDecomposer(args.docx_path)
 
-    # Extract
-    extract_dir = decomposer.extract(output_dir=args.extract_dir)
+    # If using an existing extraction folder, skip extract/delete
+    if args.use_extract_dir:
+        extract_dir = Path(args.use_extract_dir)
+        if not extract_dir.exists():
+            print(f"Error: extract dir not found: {extract_dir}")
+            sys.exit(1)
+        decomposer.extract_dir = extract_dir
+    else:
+        extract_dir = decomposer.extract(output_dir=args.extract_dir)
 
-    # Optional analysis (keep if useful)
     analysis_path = decomposer.save_analysis()
+
 
     # -------------------------------
     # SLIM NORMALIZE MODE (PRIMARY)
