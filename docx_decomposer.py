@@ -13,6 +13,63 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 import xml.etree.ElementTree as ET
+import hashlib
+from dataclasses import dataclass 
+from typing import Dict, List, Tuple
+import json
+import difflib
+
+
+
+MASTER_PROMPT = r"""You are a DOCX surgical editor.
+You will be given raw XML from specific DOCX parts.
+Your job is to return ONLY a JSON object describing file replacements.
+
+Goal: render-perfect Word output while normalizing CSI semantics using styles (not direct formatting).
+
+Allowed files to edit (default):
+- word/document.xml
+- word/styles.xml
+- word/numbering.xml
+
+Files that MUST NOT CHANGE (stability-critical):
+- word/header*.xml
+- word/footer*.xml
+
+Rules:
+1) Do NOT reformat XML. No pretty printing. No whitespace normalization.
+2) Do NOT reorder attributes. Do NOT change namespaces unless required.
+3) Prefer applying paragraph styles (w:pStyle) over adding direct paragraph/run formatting.
+4) If you detect CSI semantic roles (Section Title / PART / Article / Paragraph / Subparagraph / Sub-subparagraph) but paragraphs lack a style, you must either:
+   - map to an existing template style that matches the current appearance, or
+   - create a new template-namespaced style for that CSI role that matches the appearance currently on the page, and apply it consistently.
+5) Style naming: use template-namespaced CSI IDs:
+   - CSI_SectionTitle__ARCH
+   - CSI_Part__ARCH
+   - CSI_Article__ARCH
+   - CSI_Paragraph__ARCH
+   - CSI_Subparagraph__ARCH
+   - CSI_Subsubparagraph__ARCH
+6) Do NOT change headers/footers.
+7) Do NOT change section properties (w:sectPr) unless explicitly instructed.
+
+Output format:
+Return a single JSON object with:
+- edits: list of {path, type:"replace", sha256_before(optional), content}
+- notes: list of concise bullets describing changes
+Return JSON only. No other text.
+"""
+
+RUN_INSTRUCTION_DEFAULT = r"""Task: CSI normalization with render-perfect constraints.
+- Identify CSI roles: Section Title, PART headings, Articles (1.01…), Paragraphs (A., B.), Subparagraphs (1., 2.), Sub-subparagraphs (a., b.).
+- Use numbering context and indentation (w:numPr, w:ilvl, w:ind) to distinguish levels.
+- Ensure each role uses a consistent paragraph style.
+- If a role appears with direct formatting (no w:pStyle), promote that formatting into the appropriate CSI_*__ARCH style and apply it to all matching paragraphs.
+- Reuse existing styles where they already match the appearance.
+- Do not change headers/footers and do not change w:sectPr.
+Return JSON edits only.
+"""
+
 
 
 class DocxDecomposer:
@@ -975,42 +1032,265 @@ class DocxDecomposer:
         print(f"Reconstruction complete: {output_path}")
         return output_path
 
+    def write_normalize_bundle(self, bundle_path=None, prompts_dir=None):
+        """
+        Create a focused bundle for LLM editing and write prompts to disk.
+        Produces:
+          - bundle.json (editable + read_only xml + sha256)
+          - prompts/master_prompt.txt
+          - prompts/run_instruction.txt
+        """
+        if self.extract_dir is None:
+            raise ValueError("Must call extract() before write_normalize_bundle()")
+
+        if bundle_path is None:
+            bundle_path = self.extract_dir / "bundle.json"
+        else:
+            bundle_path = Path(bundle_path)
+
+        if prompts_dir is None:
+            prompts_dir = self.extract_dir / "prompts"
+        else:
+            prompts_dir = Path(prompts_dir)
+
+        prompts_dir.mkdir(parents=True, exist_ok=True)
+
+        bundle = build_llm_bundle(self.extract_dir)
+
+        bundle_path.write_text(json.dumps(bundle, indent=2), encoding="utf-8")
+        (prompts_dir / "master_prompt.txt").write_text(MASTER_PROMPT, encoding="utf-8")
+        (prompts_dir / "run_instruction.txt").write_text(RUN_INSTRUCTION_DEFAULT, encoding="utf-8")
+
+        print(f"Normalize bundle written: {bundle_path}")
+        print(f"Prompts written in: {prompts_dir}")
+        return bundle_path, prompts_dir
+
+    def apply_edits_and_rebuild(self, edits_json_path, output_docx_path=None):
+        """
+        Apply LLM edits, verify stability (headers/footers + sectPr), then rebuild docx.
+        Emits diffs under extract_dir/patches by default.
+        """
+        if self.extract_dir is None:
+            raise ValueError("Must call extract() before apply_edits_and_rebuild()")
+
+        edits_json_path = Path(edits_json_path)
+        if not edits_json_path.exists():
+            raise FileNotFoundError(f"Edits JSON not found: {edits_json_path}")
+
+        # Take stability snapshot BEFORE applying edits
+        snap = snapshot_stability(self.extract_dir)
+
+        # Load edits JSON
+        edits = json.loads(edits_json_path.read_text(encoding="utf-8"))
+
+        # Apply edits + write diffs
+        patches_dir = self.extract_dir / "patches"
+        apply_llm_edits(self.extract_dir, edits, patches_dir)
+
+        # Verify stability AFTER applying edits
+        verify_stability(self.extract_dir, snap)
+
+        # Rebuild docx
+        return self.reconstruct(output_path=output_docx_path)
+
+
 
 def main():
-    """Main function demonstrating usage."""
+    import argparse
     import sys
-    
-    if len(sys.argv) < 2:
-        print("Usage: python docx_decomposer.py <path_to_docx>")
-        print("\nExample: python docx_decomposer.py sample.docx")
-        sys.exit(1)
-    
-    docx_path = sys.argv[1]
-    
+
+    parser = argparse.ArgumentParser(description="DOCX decomposer + LLM normalize workflow")
+    parser.add_argument("docx_path", help="Path to input .docx")
+    parser.add_argument("--extract-dir", default=None, help="Optional extraction directory")
+    parser.add_argument("--normalize", action="store_true", help="Create LLM bundle.json + prompts")
+    parser.add_argument("--apply-edits", default=None, help="Path to LLM edits JSON to apply")
+    parser.add_argument("--output-docx", default=None, help="Output .docx path for reconstructed file")
+
+    args = parser.parse_args()
+
+    docx_path = args.docx_path
     if not os.path.exists(docx_path):
         print(f"Error: File not found: {docx_path}")
         sys.exit(1)
-    
-    # Create decomposer
+
     decomposer = DocxDecomposer(docx_path)
-    
-    # Extract the document
-    extract_dir = decomposer.extract()
-    
-    # Analyze and save report
+
+    extract_dir = decomposer.extract(output_dir=args.extract_dir)
+
+    # Keep your analysis step if you want it every time:
     analysis_path = decomposer.save_analysis()
-    
-    # Reconstruct the document
-    reconstructed_path = decomposer.reconstruct()
-    
-    print("\n" + "="*60)
+
+    if args.normalize:
+        decomposer.write_normalize_bundle()
+        print("\nNEXT STEP:")
+        print(f"- Open: {extract_dir / 'bundle.json'}")
+        print(f"- Open: {extract_dir / 'prompts' / 'master_prompt.txt'} and run_instruction.txt")
+        print("- Paste those into Claude with the bundle content.")
+        return
+
+    if args.apply_edits:
+        out = decomposer.apply_edits_and_rebuild(args.apply_edits, output_docx_path=args.output_docx)
+        print(f"\nRebuilt docx: {out}")
+        print(f"Diffs written to: {extract_dir / 'patches'}")
+        return
+
+    # Default behavior (original summary)
+    reconstructed_path = decomposer.reconstruct(output_path=args.output_docx)
+    print("\n" + "=" * 60)
     print("SUMMARY")
-    print("="*60)
-    print(f"Original document:     {docx_path}")
-    print(f"Extracted to:          {extract_dir}")
-    print(f"Analysis report:       {analysis_path}")
+    print("=" * 60)
+    print(f"Original document:      {docx_path}")
+    print(f"Extracted to:           {extract_dir}")
+    print(f"Analysis report:        {analysis_path}")
     print(f"Reconstructed document: {reconstructed_path}")
-    print("\nVerify the reconstructed document opens correctly in Word!")
+
+
+
+def sha256_bytes(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+def sha256_text(s: str) -> str:
+    return sha256_bytes(s.encode("utf-8"))
+
+@dataclass
+class StabilitySnapshot:
+    header_footer_hashes: Dict[str, str]
+    sectpr_hash: str
+
+def snapshot_headers_footers(extract_dir: Path) -> Dict[str, str]:
+    wf = extract_dir / "word"
+    hashes = {}
+    for p in sorted(wf.glob("header*.xml")) + sorted(wf.glob("footer*.xml")):
+        rel = str(p.relative_to(extract_dir)).replace("\\", "/")
+        hashes[rel] = sha256_bytes(p.read_bytes())
+    return hashes
+
+def extract_sectpr_block(document_xml: str) -> str:
+    """
+    Pull out the sectPr blocks as raw text. This is a pragmatic stability check.
+    We assume the XML is not pretty-printed or rewritten by our pipeline.
+    """
+    # Word usually has <w:sectPr> ... </w:sectPr> at end of body, sometimes multiple.
+    blocks = re.findall(r"(<w:sectPr[\s\S]*?</w:sectPr>)", document_xml)
+    return "\n".join(blocks)
+
+def snapshot_stability(extract_dir: Path) -> StabilitySnapshot:
+    doc_path = extract_dir / "word" / "document.xml"
+    doc_text = doc_path.read_text(encoding="utf-8")
+    sectpr = extract_sectpr_block(doc_text)
+    return StabilitySnapshot(
+        header_footer_hashes=snapshot_headers_footers(extract_dir),
+        sectpr_hash=sha256_text(sectpr),
+    )
+
+
+
+ALLOWED_EDIT_PATHS = {
+    "word/document.xml",
+    "word/styles.xml",
+    "word/numbering.xml",
+    # NOTE: headers/footers are intentionally NOT allowed to be edited by LLM.
+}
+
+def apply_llm_edits(extract_dir: Path, edits_json: dict, diff_dir: Path) -> None:
+    diff_dir.mkdir(parents=True, exist_ok=True)
+
+    edits = edits_json.get("edits", [])
+    if not isinstance(edits, list) or not edits:
+        raise ValueError("No edits found in LLM response JSON.")
+
+    for edit in edits:
+        rel_path = edit["path"].replace("\\", "/")
+        if rel_path not in ALLOWED_EDIT_PATHS:
+            raise ValueError(f"Edit path not allowed: {rel_path}")
+
+        target = extract_dir / rel_path
+        if not target.exists():
+            raise FileNotFoundError(f"Target file not found in package: {rel_path}")
+
+        before = target.read_text(encoding="utf-8")
+        after = edit["content"]
+
+        sha_before = edit.get("sha256_before")
+        if sha_before and sha256_text(before) != sha_before:
+            raise ValueError(f"sha256_before mismatch for {rel_path}")
+
+        # Write replacement exactly as provided
+        target.write_text(after, encoding="utf-8")
+
+        # Emit diff
+        diff = difflib.unified_diff(
+            before.splitlines(keepends=True),
+            after.splitlines(keepends=True),
+            fromfile=f"a/{rel_path}",
+            tofile=f"b/{rel_path}",
+        )
+        diff_path = diff_dir / (rel_path.replace("/", "__") + ".diff")
+        diff_path.write_text("".join(diff), encoding="utf-8")
+
+def verify_stability(extract_dir: Path, snap: StabilitySnapshot) -> None:
+    # Headers/footers must not change
+    current_hf = snapshot_headers_footers(extract_dir)
+    if current_hf != snap.header_footer_hashes:
+        # show which changed
+        changed = []
+        all_keys = set(current_hf.keys()) | set(snap.header_footer_hashes.keys())
+        for k in sorted(all_keys):
+            if current_hf.get(k) != snap.header_footer_hashes.get(k):
+                changed.append(k)
+        raise ValueError(f"Header/footer stability check FAILED. Changed: {changed}")
+
+    # sectPr must not change
+    doc_text = (extract_dir / "word" / "document.xml").read_text(encoding="utf-8")
+    current_sectpr = extract_sectpr_block(doc_text)
+    if sha256_text(current_sectpr) != snap.sectpr_hash:
+        raise ValueError("Section properties (w:sectPr) stability check FAILED.")
+
+
+def build_llm_bundle(extract_dir: Path) -> dict:
+    paths = [
+        "word/document.xml",
+        "word/styles.xml",
+        "word/numbering.xml",
+    ]
+
+    # Include headers/footers for analysis ONLY (not editable)
+    hf_paths = []
+    wf = extract_dir / "word"
+    for p in sorted(wf.glob("header*.xml")) + sorted(wf.glob("footer*.xml")):
+        hf_paths.append(str(p.relative_to(extract_dir)).replace("\\", "/"))
+
+    payload = {"editable": {}, "read_only": {}}
+
+    for rel in paths:
+        p = extract_dir / rel
+        if p.exists():
+            txt = p.read_text(encoding="utf-8")
+            payload["editable"][rel] = {
+                "sha256": sha256_text(txt),
+                "content": txt
+            }
+
+    for rel in hf_paths:
+        p = extract_dir / rel
+        txt = p.read_text(encoding="utf-8")
+        payload["read_only"][rel] = {
+            "sha256": sha256_text(txt),
+            "content": txt
+        }
+
+    # settings.xml is optional; include read-only unless you are debugging layout
+    settings_rel = "word/settings.xml"
+    sp = extract_dir / settings_rel
+    if sp.exists():
+        txt = sp.read_text(encoding="utf-8")
+        payload["read_only"][settings_rel] = {
+            "sha256": sha256_text(txt),
+            "content": txt
+        }
+
+    return payload
+
 
 
 if __name__ == "__main__":
