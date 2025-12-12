@@ -15,9 +15,74 @@ from datetime import datetime
 import xml.etree.ElementTree as ET
 import hashlib
 from dataclasses import dataclass 
-from typing import Dict, List, Tuple
+from typing import Dict, Any, List, Set, Tuple, Optional
 import json
 import difflib
+import re
+
+
+SLIM_MASTER_PROMPT = r"""You are a DOCX CSI-normalization planner.
+You will be given a slim JSON bundle that summarizes a Word document’s paragraphs, styles, and numbering.
+You MUST NOT output raw DOCX XML.
+You MUST output ONLY JSON instructions that my local script will apply.
+
+Goal: render-perfect output while normalizing CSI semantics using paragraph styles (w:pStyle).
+
+Rules:
+1) Do not propose changes to headers/footers or section properties (sectPr). Those must remain unchanged.
+2) Prefer reusing existing template styles if they match the current appearance.
+3) If a CSI role exists but paragraphs lack a style, propose creating a template-namespaced style that matches the current appearance:
+   - CSI_SectionTitle__ARCH
+   - CSI_Part__ARCH
+   - CSI_Article__ARCH
+   - CSI_Paragraph__ARCH
+   - CSI_Subparagraph__ARCH
+   - CSI_Subsubparagraph__ARCH
+4) Determine hierarchy using text patterns AND numbering/indent hints:
+   - PART headings: “PART 1”, “PART 2”, “PART 3”
+   - Articles: “1.01”, “1.02”… (often under PART)
+   - Paragraphs: “A.” “B.” …
+   - Subparagraphs: “1.” “2.” … under A./B.
+   - Sub-subparagraphs: “a.” “b.” … under 1./2. and typically indented
+5) Output must be valid JSON only.
+
+Output schema:
+{
+  "create_styles": [
+    {
+      "styleId": "CSI_Article__ARCH",
+      "name": "CSI Article (Architect Template)",
+      "basedOn": "<existing styleId or null>",
+      "type": "paragraph",
+      "pPr": { "jc": "left|center|right", "spacing": {"before":"","after":"","line":""}, "ind":{"left":"","right":"","firstLine":"","hanging":""} },
+      "rPr": { "rFonts": {"ascii":"Calibri","hAnsi":"Calibri"}, "sz":"22", "b":true, "i":false, "u":null, "color":"000000" }
+    }
+  ],
+  "apply_pStyle": [
+    { "paragraph_index": 12, "styleId": "CSI_Part__ARCH" }
+  ],
+  "notes": ["..."]
+}
+
+Notes:
+- Use paragraph_index from the provided bundle.
+- Do not include paragraphs that are marked contains_sectPr=true.
+"""
+
+SLIM_RUN_INSTRUCTION_DEFAULT = r"""Task:
+Using the slim bundle, normalize CSI semantics by ensuring consistent paragraph styles for:
+- Section Title
+- PART headings
+- Articles (1.01…)
+- Paragraphs (A., B.)
+- Subparagraphs (1., 2.)
+- Sub-subparagraphs (a., b.)
+
+Constraints:
+- Preserve visual formatting (render-perfect). If you create styles, match the existing appearance implied by the paragraphs.
+- Do not change headers/footers or sectPr.
+Return JSON instructions only.
+"""
 
 
 
@@ -1093,8 +1158,6 @@ class DocxDecomposer:
         # Rebuild docx
         return self.reconstruct(output_path=output_docx_path)
 
-
-
 def main():
     import argparse
     import sys
@@ -1183,8 +1246,6 @@ def snapshot_stability(extract_dir: Path) -> StabilitySnapshot:
         sectpr_hash=sha256_text(sectpr),
     )
 
-
-
 ALLOWED_EDIT_PATHS = {
     "word/document.xml",
     "word/styles.xml",
@@ -1246,7 +1307,6 @@ def verify_stability(extract_dir: Path, snap: StabilitySnapshot) -> None:
     if sha256_text(current_sectpr) != snap.sectpr_hash:
         raise ValueError("Section properties (w:sectPr) stability check FAILED.")
 
-
 def build_llm_bundle(extract_dir: Path) -> dict:
     paths = [
         "word/document.xml",
@@ -1290,6 +1350,263 @@ def build_llm_bundle(extract_dir: Path) -> dict:
         }
 
     return payload
+
+
+
+W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+
+def _get_attr(elem, local_name: str) -> Optional[str]:
+    # WordprocessingML attributes use w:val etc (namespaced). ET shows {ns}val.
+    return elem.get(f"{{{W_NS}}}{local_name}")
+
+def _q(tag: str) -> str:
+    return f"{{{W_NS}}}{tag}"
+
+def iter_paragraph_xml_blocks(document_xml_text: str):
+    # Non-greedy paragraph blocks. Works well for DOCX document.xml.
+    # NOTE: This intentionally avoids parsing full XML to keep indices aligned with raw text.
+    for m in re.finditer(r"(<w:p\b[\s\S]*?</w:p>)", document_xml_text):
+        yield m.start(), m.end(), m.group(1)
+
+def paragraph_text_from_block(p_xml: str) -> str:
+    # Extract visible text quickly (good enough for classification)
+    texts = re.findall(r"<w:t\b[^>]*>([\s\S]*?)</w:t>", p_xml)
+    if not texts:
+        return ""
+    # Unescape minimal XML entities
+    joined = "".join(texts)
+    joined = joined.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+    joined = joined.replace("&quot;", "\"").replace("&apos;", "'")
+    # collapse whitespace
+    joined = re.sub(r"\s+", " ", joined).strip()
+    return joined
+
+def paragraph_contains_sectpr(p_xml: str) -> bool:
+    return "<w:sectPr" in p_xml
+
+def paragraph_pstyle_from_block(p_xml: str) -> Optional[str]:
+    m = re.search(r"<w:pStyle\b[^>]*w:val=\"([^\"]+)\"", p_xml)
+    return m.group(1) if m else None
+
+def paragraph_numpr_from_block(p_xml: str) -> Dict[str, Optional[str]]:
+    numId = None
+    ilvl = None
+    m1 = re.search(r"<w:numId\b[^>]*w:val=\"([^\"]+)\"", p_xml)
+    m2 = re.search(r"<w:ilvl\b[^>]*w:val=\"([^\"]+)\"", p_xml)
+    if m1: numId = m1.group(1)
+    if m2: ilvl = m2.group(1)
+    return {"numId": numId, "ilvl": ilvl}
+
+def paragraph_ppr_hints_from_block(p_xml: str) -> Dict[str, Any]:
+    # lightweight hints (alignment + ind + spacing)
+    hints: Dict[str, Any] = {}
+    m = re.search(r"<w:jc\b[^>]*w:val=\"([^\"]+)\"", p_xml)
+    if m:
+        hints["jc"] = m.group(1)
+    ind = {}
+    for k in ["left", "right", "firstLine", "hanging"]:
+        m2 = re.search(rf"<w:ind\b[^>]*w:{k}=\"([^\"]+)\"", p_xml)
+        if m2:
+            ind[k] = m2.group(1)
+    if ind:
+        hints["ind"] = ind
+    spacing = {}
+    for k in ["before", "after", "line"]:
+        m3 = re.search(rf"<w:spacing\b[^>]*w:{k}=\"([^\"]+)\"", p_xml)
+        if m3:
+            spacing[k] = m3.group(1)
+    if spacing:
+        hints["spacing"] = spacing
+    return hints
+
+def build_style_catalog(styles_xml_path: Path, used_style_ids: Set[str]) -> Dict[str, Any]:
+    # Parse styles.xml and extract compact info only for used styles + inheritance chain
+    tree = ET.parse(styles_xml_path)
+    root = tree.getroot()
+
+    # index by styleId
+    styles_by_id: Dict[str, ET.Element] = {}
+    for st in root.findall(f".//{_q('style')}"):
+        sid = _get_attr(st, "styleId")
+        if sid:
+            styles_by_id[sid] = st
+
+    # expand basedOn chain
+    to_include = set(used_style_ids)
+    changed = True
+    while changed:
+        changed = False
+        for sid in list(to_include):
+            st = styles_by_id.get(sid)
+            if st is None:
+                continue
+            based = st.find(_q("basedOn"))
+            if based is not None:
+                base_id = _get_attr(based, "val")
+                if base_id and base_id not in to_include:
+                    to_include.add(base_id)
+                    changed = True
+
+    def extract_pr(st: ET.Element) -> Dict[str, Any]:
+        out: Dict[str, Any] = {"pPr": {}, "rPr": {}}
+        pPr = st.find(_q("pPr"))
+        rPr = st.find(_q("rPr"))
+
+        if pPr is not None:
+            jc = pPr.find(_q("jc"))
+            if jc is not None:
+                out["pPr"]["jc"] = _get_attr(jc, "val")
+            spacing = pPr.find(_q("spacing"))
+            if spacing is not None:
+                out["pPr"]["spacing"] = {k: spacing.get(f"{{{W_NS}}}{k}") for k in ["before","after","line"] if spacing.get(f"{{{W_NS}}}{k}") is not None}
+            ind = pPr.find(_q("ind"))
+            if ind is not None:
+                out["pPr"]["ind"] = {k: ind.get(f"{{{W_NS}}}{k}") for k in ["left","right","firstLine","hanging"] if ind.get(f"{{{W_NS}}}{k}") is not None}
+
+        if rPr is not None:
+            rFonts = rPr.find(_q("rFonts"))
+            if rFonts is not None:
+                out["rPr"]["rFonts"] = {k: rFonts.get(f"{{{W_NS}}}{k}") for k in ["ascii","hAnsi","cs"] if rFonts.get(f"{{{W_NS}}}{k}") is not None}
+            sz = rPr.find(_q("sz"))
+            if sz is not None:
+                out["rPr"]["sz"] = _get_attr(sz, "val")
+            b = rPr.find(_q("b"))
+            if b is not None:
+                out["rPr"]["b"] = True
+            i = rPr.find(_q("i"))
+            if i is not None:
+                out["rPr"]["i"] = True
+            u = rPr.find(_q("u"))
+            if u is not None:
+                out["rPr"]["u"] = _get_attr(u, "val") or True
+            color = rPr.find(_q("color"))
+            if color is not None:
+                out["rPr"]["color"] = _get_attr(color, "val")
+
+        return out
+
+    catalog: Dict[str, Any] = {}
+    for sid in sorted(to_include):
+        st = styles_by_id.get(sid)
+        if st is None:
+            continue
+        name_el = st.find(_q("name"))
+        based_el = st.find(_q("basedOn"))
+        st_type = _get_attr(st, "type")
+        catalog[sid] = {
+            "styleId": sid,
+            "type": st_type,
+            "name": _get_attr(name_el, "val") if name_el is not None else None,
+            "basedOn": _get_attr(based_el, "val") if based_el is not None else None,
+            **extract_pr(st),
+        }
+    return catalog
+
+def build_numbering_catalog(numbering_xml_path: Path, used_num_ids: Set[str]) -> Dict[str, Any]:
+    if not numbering_xml_path.exists():
+        return {}
+
+    tree = ET.parse(numbering_xml_path)
+    root = tree.getroot()
+
+    # map numId -> abstractNumId
+    num_map: Dict[str, str] = {}
+    for num in root.findall(f".//{_q('num')}"):
+        numId = _get_attr(num, "numId")
+        abs_el = num.find(_q("abstractNumId"))
+        if numId and abs_el is not None:
+            absId = _get_attr(abs_el, "val")
+            if absId:
+                num_map[numId] = absId
+
+    abs_needed = {num_map[n] for n in used_num_ids if n in num_map}
+
+    # extract abstractNum level patterns
+    abstracts: Dict[str, Any] = {}
+    for absn in root.findall(f".//{_q('abstractNum')}"):
+        absId = _get_attr(absn, "abstractNumId")
+        if not absId or absId not in abs_needed:
+            continue
+        lvls = []
+        for lvl in absn.findall(_q("lvl")):
+            ilvl = _get_attr(lvl, "ilvl")
+            numFmt = lvl.find(_q("numFmt"))
+            lvlText = lvl.find(_q("lvlText"))
+            pPr = lvl.find(_q("pPr"))
+            lvl_entry = {
+                "ilvl": ilvl,
+                "numFmt": _get_attr(numFmt, "val") if numFmt is not None else None,
+                "lvlText": _get_attr(lvlText, "val") if lvlText is not None else None,
+                "pPr": {}
+            }
+            if pPr is not None:
+                ind = pPr.find(_q("ind"))
+                if ind is not None:
+                    lvl_entry["pPr"]["ind"] = {k: ind.get(f"{{{W_NS}}}{k}") for k in ["left","hanging","firstLine"] if ind.get(f"{{{W_NS}}}{k}") is not None}
+                jc = pPr.find(_q("jc"))
+                if jc is not None:
+                    lvl_entry["pPr"]["jc"] = _get_attr(jc, "val")
+            lvls.append(lvl_entry)
+        abstracts[absId] = {"abstractNumId": absId, "levels": lvls}
+
+    nums: Dict[str, Any] = {}
+    for numId in sorted(used_num_ids):
+        absId = num_map.get(numId)
+        nums[numId] = {"numId": numId, "abstractNumId": absId}
+
+    return {"nums": nums, "abstracts": abstracts}
+
+def build_slim_bundle(extract_dir: Path) -> Dict[str, Any]:
+    # Stability hashes
+    snap = snapshot_stability(extract_dir)
+
+    doc_path = extract_dir / "word" / "document.xml"
+    doc_text = doc_path.read_text(encoding="utf-8")
+
+    paragraphs = []
+    used_style_ids: Set[str] = set()
+    used_num_ids: Set[str] = set()
+
+    for idx, (_s, _e, p_xml) in enumerate(iter_paragraph_xml_blocks(doc_text)):
+        txt = paragraph_text_from_block(p_xml)
+        pStyle = paragraph_pstyle_from_block(p_xml)
+        numpr = paragraph_numpr_from_block(p_xml)
+        hints = paragraph_ppr_hints_from_block(p_xml)
+        contains_sect = paragraph_contains_sectpr(p_xml)
+
+        if pStyle:
+            used_style_ids.add(pStyle)
+        if numpr.get("numId"):
+            used_num_ids.add(numpr["numId"])
+
+        # Keep summary compact: cap text length
+        if len(txt) > 200:
+            txt = txt[:200] + "…"
+
+        paragraphs.append({
+            "paragraph_index": idx,
+            "text": txt,
+            "pStyle": pStyle,
+            "numPr": numpr if (numpr.get("numId") or numpr.get("ilvl")) else None,
+            "pPr_hints": hints if hints else None,
+            "contains_sectPr": contains_sect
+        })
+
+    styles_path = extract_dir / "word" / "styles.xml"
+    style_catalog = build_style_catalog(styles_path, used_style_ids) if styles_path.exists() else {}
+
+    numbering_path = extract_dir / "word" / "numbering.xml"
+    numbering_catalog = build_numbering_catalog(numbering_path, used_num_ids)
+
+    return {
+        "stability": {
+            "header_footer_hashes": snap.header_footer_hashes,
+            "sectPr_hash": snap.sectpr_hash
+        },
+        "paragraphs": paragraphs,
+        "style_catalog": style_catalog,
+        "numbering_catalog": numbering_catalog
+    }
 
 
 
