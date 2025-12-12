@@ -1,7 +1,7 @@
 # Word Document Structure Analysis
 
 **Source Document:** `MySpec.docx`
-**Analysis Date:** 2025-12-12 11:33:58
+**Analysis Date:** 2025-12-12 11:56:00
 **Extraction Directory:** `MySpec_extracted`
 
 ---
@@ -14,6 +14,9 @@
 ├── docProps
 │   ├── app.xml
 │   └── core.xml
+├── prompts_slim
+│   ├── master_prompt.txt
+│   └── run_instruction.txt
 ├── word
 │   ├── _rels
 │   │   └── document.xml.rels
@@ -29,7 +32,9 @@
 │   ├── settings.xml
 │   ├── styles.xml
 │   └── webSettings.xml
-└── [Content_Types].xml
+├── [Content_Types].xml
+├── instructions.json
+└── slim_bundle.json
 ```
 
 ## Complete File Inventory
@@ -49,6 +54,22 @@
 ### `docProps\core.xml`
 - **Type:** XML Document
 - **Size:** 805 bytes (0.79 KB)
+
+### `instructions.json`
+- **Type:** Other
+- **Size:** 8,371 bytes (8.17 KB)
+
+### `prompts_slim\master_prompt.txt`
+- **Type:** Other
+- **Size:** 2,003 bytes (1.96 KB)
+
+### `prompts_slim\run_instruction.txt`
+- **Type:** Other
+- **Size:** 454 bytes (0.44 KB)
+
+### `slim_bundle.json`
+- **Type:** Other
+- **Size:** 74,507 bytes (72.76 KB)
 
 ### `word\_rels\document.xml.rels`
 - **Type:** Relationships
