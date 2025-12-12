@@ -27,9 +27,11 @@ You MUST NOT output raw DOCX XML.
 You MUST output ONLY JSON instructions that my local script will apply.
 
 Absolute rule:
-You must NOT include pPr in create_styles.
-You are labeling structure only.
-Any attempt to specify paragraph alignment, indentation, spacing, or numbering is forbidden.
+You must NOT include pPr or rPr (or any formatting properties) in create_styles.
+You are not allowed to describe or prescribe formatting.
+Instead, when a new style is needed, you must reference an exemplar paragraph using derive_from_paragraph_index.
+Any attempt to specify alignment, indentation, spacing, fonts, or numbering is forbidden.
+
 
 Goal: render-perfect output while normalizing CSI semantics using paragraph styles (w:pStyle).
 
@@ -43,13 +45,14 @@ Rules:
    - CSI_Paragraph__ARCH
    - CSI_Subparagraph__ARCH
    - CSI_Subsubparagraph__ARCH
-4) Determine hierarchy using text patterns AND numbering/indent hints:
+4) If you create a new CSI_*__ARCH style, you must choose a derive_from_paragraph_index that is a “clean” exemplar of that role (not END OF SECTION, not blank, not a section break, not a weird edge-case).
+5) Determine hierarchy using text patterns AND numbering/indent hints:
    - PART headings: “PART 1”, “PART 2”, “PART 3”
    - Articles: “1.01”, “1.02”… (often under PART)
    - Paragraphs: “A.” “B.” …
    - Subparagraphs: “1.” “2.” … under A./B.
    - Sub-subparagraphs: “a.” “b.” … under 1./2. and typically indented
-5) Output must be valid JSON only.
+6) Output must be valid JSON only.
 
 Output schema:
 {
@@ -57,10 +60,9 @@ Output schema:
     {
       "styleId": "CSI_Article__ARCH",
       "name": "CSI Article (Architect Template)",
-      "basedOn": "<existing styleId or null>",
       "type": "paragraph",
-      "pPr": { "jc": "left|center|right", "spacing": {"before":"","after":"","line":""}, "ind":{"left":"","right":"","firstLine":"","hanging":""} },
-      "rPr": { "rFonts": {"ascii":"Calibri","hAnsi":"Calibri"}, "sz":"22", "b":true, "i":false, "u":null, "color":"000000" }
+      "derive_from_paragraph_index": 44,
+      "basedOn": "<existing styleId or null>"
     }
   ],
   "apply_pStyle": [
@@ -69,9 +71,12 @@ Output schema:
   "notes": ["..."]
 }
 
+
 Notes:
 - Use paragraph_index from the provided bundle.
 - Do not include paragraphs that are marked contains_sectPr=true.
+- For create_styles: derive_from_paragraph_index must reference a real paragraph_index from the bundle.
+- Never emit pPr/rPr in JSON.
 """
 
 SLIM_RUN_INSTRUCTION_DEFAULT = r"""Task:
@@ -84,10 +89,12 @@ Using the slim bundle, normalize CSI semantics by ensuring consistent paragraph 
 - Sub-subparagraphs (a., b.)
 
 Constraints:
-- Preserve visual formatting (render-perfect). If you create styles, match the existing appearance implied by the paragraphs.
+- Preserve visual formatting (render-perfect).
 - Do not change headers/footers or sectPr.
-Return JSON instructions only.
+- If you create styles, do NOT describe formatting. Instead, create styles by selecting an exemplar paragraph and setting derive_from_paragraph_index.
+- Return JSON instructions only (no prose, no XML, no markdown).
 """
+
 
 
 
