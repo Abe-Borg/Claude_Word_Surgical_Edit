@@ -1195,66 +1195,99 @@ class DocxDecomposer:
 def main():
     import argparse
     import sys
+    import os
 
     parser = argparse.ArgumentParser(description="DOCX decomposer + LLM normalize workflow")
     parser.add_argument("docx_path", help="Path to input .docx")
     parser.add_argument("--extract-dir", default=None, help="Optional extraction directory")
-    parser.add_argument("--normalize", action="store_true", help="Create LLM bundle.json + prompts")
+
+    # Full XML modes
+    parser.add_argument("--normalize", action="store_true", help="Create full LLM bundle.json + prompts")
     parser.add_argument("--apply-edits", default=None, help="Path to LLM edits JSON to apply")
-    parser.add_argument("--output-docx", default=None, help="Output .docx path for reconstructed file")
+
+    # Slim instruction-based modes (RECOMMENDED)
     parser.add_argument("--normalize-slim", action="store_true", help="Write slim_bundle.json + slim prompts")
     parser.add_argument("--apply-instructions", default=None, help="Path to Claude instruction JSON to apply")
 
+    parser.add_argument("--output-docx", default=None, help="Output .docx path for reconstructed file")
+
+    # ✅ Parse args FIRST
+    args = parser.parse_args()
+
+    # Validate input path
+    if not os.path.exists(args.docx_path):
+        print(f"Error: File not found: {args.docx_path}")
+        sys.exit(1)
+
+    # Create decomposer
+    decomposer = DocxDecomposer(args.docx_path)
+
+    # Extract
+    extract_dir = decomposer.extract(output_dir=args.extract_dir)
+
+    # Optional analysis (keep if useful)
+    analysis_path = decomposer.save_analysis()
+
+    # -------------------------------
+    # SLIM NORMALIZE MODE (PRIMARY)
+    # -------------------------------
     if args.normalize_slim:
         decomposer.write_slim_normalize_bundle()
         print("\nNEXT STEP:")
-        print("- Paste prompts_slim/master_prompt.txt + prompts_slim/run_instruction.txt + slim_bundle.json into Claude.")
-        print("- Save Claude JSON output as instructions.json, then run with --apply-instructions.")
+        print("- Paste prompts_slim/master_prompt.txt")
+        print("- Paste prompts_slim/run_instruction.txt")
+        print("- Paste slim_bundle.json")
+        print("- Into Claude Opus 4.5")
+        print("- Save Claude output as instructions.json")
+        print("- Then run with --apply-instructions instructions.json")
         return
 
+    # -------------------------------
+    # APPLY SLIM INSTRUCTIONS
+    # -------------------------------
     if args.apply_instructions:
-        out = decomposer.apply_instructions_and_rebuild(args.apply_instructions, output_docx_path=args.output_docx)
+        out = decomposer.apply_instructions_and_rebuild(
+            args.apply_instructions,
+            output_docx_path=args.output_docx
+        )
         print(f"\nRebuilt docx: {out}")
         return
 
-
-    args = parser.parse_args()
-
-    docx_path = args.docx_path
-    if not os.path.exists(docx_path):
-        print(f"Error: File not found: {docx_path}")
-        sys.exit(1)
-
-    decomposer = DocxDecomposer(docx_path)
-
-    extract_dir = decomposer.extract(output_dir=args.extract_dir)
-
-    # Keep your analysis step if you want it every time:
-    analysis_path = decomposer.save_analysis()
-
+    # -------------------------------
+    # FULL XML NORMALIZE (LEGACY)
+    # -------------------------------
     if args.normalize:
         decomposer.write_normalize_bundle()
         print("\nNEXT STEP:")
         print(f"- Open: {extract_dir / 'bundle.json'}")
-        print(f"- Open: {extract_dir / 'prompts' / 'master_prompt.txt'} and run_instruction.txt")
-        print("- Paste those into Claude with the bundle content.")
+        print(f"- Open: {extract_dir / 'prompts' / 'master_prompt.txt'}")
+        print("- Paste those into Claude")
         return
 
+    # -------------------------------
+    # APPLY FULL XML EDITS (LEGACY)
+    # -------------------------------
     if args.apply_edits:
-        out = decomposer.apply_edits_and_rebuild(args.apply_edits, output_docx_path=args.output_docx)
+        out = decomposer.apply_edits_and_rebuild(
+            args.apply_edits,
+            output_docx_path=args.output_docx
+        )
         print(f"\nRebuilt docx: {out}")
         print(f"Diffs written to: {extract_dir / 'patches'}")
         return
 
-    # Default behavior (original summary)
+    # -------------------------------
+    # DEFAULT: simple extract + rebuild
+    # -------------------------------
     reconstructed_path = decomposer.reconstruct(output_path=args.output_docx)
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
-    print(f"Original document:      {docx_path}")
+    print(f"Original document:      {args.docx_path}")
     print(f"Extracted to:           {extract_dir}")
     print(f"Analysis report:        {analysis_path}")
     print(f"Reconstructed document: {reconstructed_path}")
+
 
 
 def sha256_bytes(b: bytes) -> str:
