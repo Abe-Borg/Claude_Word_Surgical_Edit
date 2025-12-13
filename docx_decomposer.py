@@ -1213,9 +1213,9 @@ def main():
     parser.add_argument("docx_path", help="Path to input .docx")
     parser.add_argument("--extract-dir", default=None, help="Optional extraction directory")
 
-    # Full XML modes
-    parser.add_argument("--normalize", action="store_true", help="Create full LLM bundle.json + prompts")
-    parser.add_argument("--apply-edits", default=None, help="Path to LLM edits JSON to apply")
+    # Full XML modes LEGACY
+    # parser.add_argument("--normalize", action="store_true", help="Create full LLM bundle.json + prompts")
+    # parser.add_argument("--apply-edits", default=None, help="Path to LLM edits JSON to apply")
 
     # Slim instruction-based modes (RECOMMENDED)
     parser.add_argument("--normalize-slim", action="store_true", help="Write slim_bundle.json + slim prompts")

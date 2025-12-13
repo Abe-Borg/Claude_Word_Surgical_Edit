@@ -1,0 +1,8 @@
+Task: CSI normalization with render-perfect constraints.
+- Identify CSI roles: Section Title, PART headings, Articles (1.01…), Paragraphs (A., B.), Subparagraphs (1., 2.), Sub-subparagraphs (a., b.).
+- Use numbering context and indentation (w:numPr, w:ilvl, w:ind) to distinguish levels.
+- Ensure each role uses a consistent paragraph style.
+- If a role appears with direct formatting (no w:pStyle), promote that formatting into the appropriate CSI_*__ARCH style and apply it to all matching paragraphs.
+- Reuse existing styles where they already match the appearance.
+- Do not change headers/footers and do not change w:sectPr.
+Return JSON edits only.
