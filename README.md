@@ -1,272 +1,153 @@
-DOCX CSI Structural Normalizer — Architect-Template Learning Engine
+# DOCX CSI Normalizer
 
-Overview
+A tool that adds CSI structural tagging to Word specification documents without changing how they look.
 
-This project implements a safe, deterministic system for extracting structural meaning and architect-defined formatting from Microsoft Word (.docx) specification documents used in AEC workflows.
+## What it does
 
-It was built to operate in environments where:
+Takes an architect's Word spec template and:
+1. Identifies CSI structural elements (PART, Article, Paragraph, etc.)
+2. Learns the formatting from the document itself
+3. Creates Word paragraph styles based on actual formatting
+4. Applies those styles to matching paragraphs
+5. Guarantees zero visual change to the document
 
-Architect Word templates are sacred
+The output looks identical but now has proper paragraph styles you can work with programmatically.
 
-Visual drift is unacceptable
+## Installation
 
-Formatting is often inconsistent, implicit, or hand-applied
+```bash
+pip install anthropic  # Required for LLM API calls
+```
 
-CSI MasterFormat / SectionFormat / PageFormat structure is desired
+Set your Anthropic API key:
+```bash
+export ANTHROPIC_API_KEY='your-key-here'
+```
 
-Word’s internal formatting behavior is fragile and non-obvious
+## Usage
 
-The system does not normalize appearance.
-It learns structure and formatting from the architect’s document without changing how it looks.
+### Basic workflow
 
-Core Problem
+```bash
+# Extract the DOCX to see what you're working with
+python docx_decomposer.py extract input.docx
 
-AEC specification documents must satisfy two competing requirements:
+# Run the normalizer (creates styles and applies them)
+python docx_decomposer.py normalize input.docx output.docx
 
-Structural correctness
+# Compare before/after to verify no visual drift
+python docx_decomposer.py compare input.docx output.docx
+```
 
-Sections, PARTs, Articles, Paragraphs, Subparagraphs, etc. must be explicitly identifiable
+### Available commands
 
-Required for automation, analysis, downstream processing, and consistency
+**`extract <docx_file> [output_dir]`**  
+Unzips the DOCX into a folder for inspection.
 
-Visual immutability
+**`analyze <docx_file>`**  
+Generates a detailed markdown report of the document structure.
 
-Architect-controlled templates must not change
+**`slim-bundle <docx_file>`**  
+Creates a minimal JSON representation (text, numbering hints, styles) for LLM analysis.
 
-Hanging indents, spacing, numbering, headers/footers, and alignment must remain pixel-identical
+**`normalize <input.docx> <output.docx> [--custom-prompt prompt.txt]`**  
+Main command. Adds CSI paragraph styles without changing appearance.
+- Uses Claude API to classify structure
+- Derives formatting from exemplar paragraphs
+- Applies styles in-place
+- Verifies zero drift
 
-Naïve approaches (DOCX reconstruction, formatting enforcement, XML rewriting) consistently fail because Word relies on implicit inheritance and undocumented behavior.
+**`compare <before.docx> <after.docx>`**  
+Visual diff showing what changed (should be nothing except style tags).
 
-Final Architecture (Successful & Locked In)
-Principle
+**`reconstruct <extracted_dir> <output.docx>`**  
+Rebuilds a DOCX from an extracted folder.
 
-The architect’s DOCX controls appearance.
-The system may only annotate structure and learn formatting — never invent it.
+### Optional: Custom prompts
 
-What This Tool Does
-High-Level Capabilities
+By default, `normalize` uses the built-in prompt. To customize:
 
-Analyzes a DOCX spec without altering its appearance
+```bash
+python docx_decomposer.py normalize input.docx output.docx --custom-prompt my_instructions.txt
+```
 
-Identifies CSI structural roles:
+## How it works
 
-Section Title
+1. **Extract**: Unzips DOCX, records hashes of headers/footers/section properties
+2. **Analyze**: LLM sees slim bundle (text + numbering context only, no formatting)
+3. **Classify**: LLM returns JSON with CSI role assignments and exemplar paragraph indices
+4. **Derive**: Script extracts formatting from exemplar paragraphs chosen by LLM
+5. **Apply**: Inserts `<w:pStyle>` tags into paragraphs by index
+6. **Verify**: Fails if anything changed except `<w:pStyle>` additions
 
-PART
+## What gets created
 
-Article
+After running `normalize`, the document will have these paragraph styles:
+- `CSI_SectionTitle__ARCH`
+- `CSI_Part__ARCH`
+- `CSI_Article__ARCH`
+- `CSI_Paragraph__ARCH`
+- `CSI_Subparagraph__ARCH`
+- `CSI_Subsubparagraph__ARCH`
 
-Paragraph
+Each style captures the exact formatting from representative paragraphs in the original document.
 
-Subparagraph
+## What it doesn't do
 
-Sub-subparagraph
-
-Learns actual formatting used by the architect for each role
-
-Creates real Word styles derived from exemplar paragraphs
-
-Applies styles in place with zero visual drift
-
-Produces a reusable formatting profile for downstream use
-
-What This Tool Explicitly Does NOT Do
-
-These are intentional and enforced:
-
-❌ No DOCX reconstruction
-
-❌ No formatting normalization
-
-❌ No paragraph spacing/alignment/indent edits
-
-❌ No numbering changes
-
-❌ No header/footer changes
-
-❌ No sectPr changes
-
-❌ No LLM-authored XML
-
-❌ No CSI visual enforcement
-
-If any of the above occur, the run fails.
-
-Pipeline Summary
-1. Extract (Once)
-
-DOCX is unzipped into an extracted directory
-
-Stability hashes are recorded for:
-
-headers
-
-footers
-
-section properties (sectPr)
-
-relationships
-
-content types
-
-2. Slim Structural Bundle
-
-The system generates a minimal JSON representation:
-
-Paragraph index
-
-Raw text
-
-Numbering hints (read-only context)
-
-Existing styles (catalog only)
-
-Flags for sectPr containment
-
-No formatting data is sent to the LLM.
-
-3. LLM Classification (Structure Only)
-
-The LLM:
-
-Sees only the slim bundle
-
-Classifies paragraphs into CSI roles
-
-Chooses exemplar paragraph indices per role
-
-Returns JSON instructions only
-
-The LLM is forbidden from:
-
-specifying formatting
-
-emitting XML
-
-emitting pPr / rPr
-
-proposing visual changes
-
-4. Local Style Derivation (Critical Step)
-
-The local script:
-
-Locates exemplar paragraphs chosen by the LLM
-
-Extracts their effective formatting:
-
-paragraph properties (w:pPr)
-
-excluding w:pStyle
-
-excluding w:numPr
-
-run properties (w:rPr) from representative runs
-
-Synthesizes real Word styles in styles.xml
-
-Preserves all existing formatting behavior
-
-These styles reflect exactly what the architect authored, whether via:
-
-real styles
-
-hand formatting
-
-inconsistent usage
-
-5. In-Place Mutation
-
-Inserts w:pStyle into paragraphs by index
-
-Does not modify any other paragraph properties
-
-Does not touch numbering, headers, footers, or section properties
-
-6. Stability Verification (Hard Fail on Drift)
-
-Every run verifies:
-
-Paragraph XML unchanged except for w:pStyle
-
-Headers unchanged
-
-Footers unchanged
-
-sectPr unchanged
-
-Relationships unchanged
-
-[Content_Types].xml unchanged
-
-If anything drifts → execution stops.
-
-Resulting Output
-
-After a successful run, the document:
-
-Looks pixel-identical
-
-Contains:
-
-Explicit CSI structural tagging
-
-Architect-derived paragraph styles:
-
-CSI_SectionTitle__ARCH
-
-CSI_Part__ARCH
-
-CSI_Article__ARCH
-
-CSI_Paragraph__ARCH
-
-CSI_Subparagraph__ARCH
-
-CSI_Subsubparagraph__ARCH
-
-These styles now represent the architect’s formatting intent in a reusable, machine-readable way.
-
-Why This Matters
-
-This tool solves a long-standing AEC problem:
-
-“How do we match an architect’s spec formatting without guessing, rewriting Word, or breaking their template?”
-
-Answer:
-
-Learn their formatting
-
-Encode it as styles
-
-Apply it mechanically later
-
-Known Limitations (Intentional)
-
-No numbering normalization
-
-No list-definition rewriting
-
-No spec generation
-
-No visual enforcement
-
-These belong to later, opt-in phases.
-
-Design Philosophy
-
-Determinism over cleverness
-
-Safety over convenience
-
-Structure before appearance
-
-Learn from the document — never override it
-
-Fail fast if invariants are violated
-
-Status
-
-✅ Production-ready for structural learning
-✅ Successfully tested against multiple architect templates
-✅ Robust even on poorly authored specs
+- Change visual appearance
+- Modify numbering definitions
+- Touch headers, footers, or section breaks
+- Normalize spacing, indents, or alignment
+- Generate new content
+
+These are intentional safeguards. The architect's template is sacred.
+
+## Safety features
+
+- Hard fails if headers/footers change
+- Hard fails if section properties change
+- Hard fails if relationships change
+- Hard fails if paragraph properties drift beyond `<w:pStyle>` insertion
+- LLM is forbidden from specifying formatting (only structure classification)
+
+## Example output
+
+```json
+{
+  "create_styles": [
+    {
+      "styleId": "CSI_Part__ARCH",
+      "name": "CSI Part (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 12
+    }
+  ],
+  "apply_pStyle": [
+    {"paragraph_index": 12, "styleId": "CSI_Part__ARCH"},
+    {"paragraph_index": 45, "styleId": "CSI_Part__ARCH"},
+    {"paragraph_index": 78, "styleId": "CSI_Part__ARCH"}
+  ],
+  "notes": ["Applied CSI_Part__ARCH to 3 PART headings"]
+}
+```
+
+## Requirements
+
+- Python 3.8+
+- Anthropic API key (Claude Sonnet 4)
+- Windows or Linux (tested on both)
+
+## Troubleshooting
+
+**"Paragraph drift detected"**  
+The script changed something it shouldn't have. This is a bug, not expected behavior.
+
+**"derive_from_paragraph_index out of range"**  
+LLM referenced a paragraph that doesn't exist. Try re-running or check your custom prompt.
+
+**"LLM formatting fields are forbidden"**  
+LLM tried to specify formatting directly instead of referencing an exemplar. This violates the contract.
+
+## License
+
+Do whatever you want with it.
