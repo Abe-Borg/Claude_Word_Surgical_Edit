@@ -1,0 +1,14 @@
+Task:
+Using the slim bundle, normalize CSI semantics by ensuring consistent paragraph styles for:
+- Section Title
+- PART headings
+- Articles (1.01…)
+- Paragraphs (A., B.)
+- Subparagraphs (1., 2.)
+- Sub-subparagraphs (a., b.)
+
+Constraints:
+- Preserve visual formatting (render-perfect).
+- Do not change headers/footers or sectPr.
+- If you create styles, do NOT describe formatting. Instead, create styles by selecting an exemplar paragraph and setting derive_from_paragraph_index.
+- Return JSON instructions only (no prose, no XML, no markdown).
