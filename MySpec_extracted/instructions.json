@@ -1,0 +1,82 @@
+{
+  "create_styles": [
+    {
+      "styleId": "CSI_SectionID__ARCH",
+      "name": "CSI Section ID (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 0,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_SectionName__ARCH",
+      "name": "CSI Section Name (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 1,
+      "basedOn": null
+    }
+  ],
+  "apply_pStyle": [
+    { "paragraph_index": 0, "styleId": "CSI_SectionID__ARCH" },
+    { "paragraph_index": 1, "styleId": "CSI_SectionName__ARCH" },
+    { "paragraph_index": 107, "styleId": "SectionTitle" },
+    { "paragraph_index": 18, "styleId": "Article" },
+    { "paragraph_index": 37, "styleId": "Article" },
+    { "paragraph_index": 46, "styleId": "Article" },
+    { "paragraph_index": 69, "styleId": "Article" },
+    { "paragraph_index": 85, "styleId": "Article" },
+    { "paragraph_index": 97, "styleId": "Article" },
+    { "paragraph_index": 112, "styleId": "Article" },
+    { "paragraph_index": 136, "styleId": "Article" },
+    { "paragraph_index": 13, "styleId": "SpecParagraph" },
+    { "paragraph_index": 25, "styleId": "SpecParagraph" },
+    { "paragraph_index": 35, "styleId": "SpecParagraph" },
+    { "paragraph_index": 40, "styleId": "SpecParagraph" },
+    { "paragraph_index": 43, "styleId": "SpecParagraph" },
+    { "paragraph_index": 52, "styleId": "SpecParagraph" },
+    { "paragraph_index": 61, "styleId": "SpecParagraph" },
+    { "paragraph_index": 72, "styleId": "SpecParagraph" },
+    { "paragraph_index": 75, "styleId": "SpecParagraph" },
+    { "paragraph_index": 79, "styleId": "SpecParagraph" },
+    { "paragraph_index": 83, "styleId": "SpecParagraph" },
+    { "paragraph_index": 88, "styleId": "SpecParagraph" },
+    { "paragraph_index": 93, "styleId": "SpecParagraph" },
+    { "paragraph_index": 100, "styleId": "SpecParagraph" },
+    { "paragraph_index": 105, "styleId": "SpecParagraph" },
+    { "paragraph_index": 110, "styleId": "SpecParagraph" },
+    { "paragraph_index": 118, "styleId": "SpecParagraph" },
+    { "paragraph_index": 133, "styleId": "SpecParagraph" },
+    { "paragraph_index": 138, "styleId": "SpecParagraph" },
+    { "paragraph_index": 6, "styleId": "SubParagraph" },
+    { "paragraph_index": 8, "styleId": "SubParagraph" },
+    { "paragraph_index": 10, "styleId": "SubParagraph" },
+    { "paragraph_index": 15, "styleId": "SubParagraph" },
+    { "paragraph_index": 21, "styleId": "SubParagraph" },
+    { "paragraph_index": 27, "styleId": "SubParagraph" },
+    { "paragraph_index": 33, "styleId": "SubParagraph" },
+    { "paragraph_index": 49, "styleId": "SubParagraph" },
+    { "paragraph_index": 55, "styleId": "SubParagraph" },
+    { "paragraph_index": 63, "styleId": "SubParagraph" },
+    { "paragraph_index": 68, "styleId": "SubParagraph" },
+    { "paragraph_index": 116, "styleId": "SubParagraph" },
+    { "paragraph_index": 121, "styleId": "SubParagraph" },
+    { "paragraph_index": 125, "styleId": "SubParagraph" },
+    { "paragraph_index": 130, "styleId": "SubParagraph" }
+  ],
+  "roles": {
+    "SectionID": { "styleId": "CSI_SectionID__ARCH", "exemplar_paragraph_index": 0 },
+    "SectionTitle": { "styleId": "CSI_SectionName__ARCH", "exemplar_paragraph_index": 1 },
+    "PART": { "styleId": "SectionTitle", "exemplar_paragraph_index": 2 },
+    "ARTICLE": { "styleId": "Article", "exemplar_paragraph_index": 3 },
+    "PARAGRAPH": { "styleId": "SpecParagraph", "exemplar_paragraph_index": 4 },
+    "SUBPARAGRAPH": { "styleId": "SubParagraph", "exemplar_paragraph_index": 5 }
+  },
+  "notes": [
+    "SectionID (para 0) and SectionTitle/SectionName (para 1) have no style; created CSI_SectionID__ARCH and CSI_SectionName__ARCH derived from those paragraphs.",
+    "PART headings use existing 'SectionTitle' style (paras 2, 45 already have it; para 107 needs it applied).",
+    "Articles (X.0X pattern) use existing 'Article' style; several paragraphs missing it: 18, 37, 46, 69, 85, 97, 112, 136.",
+    "Paragraphs (A., B., C.) use existing 'SpecParagraph' style; several missing: 13, 25, 35, 40, 43, 52, 61, 72, 75, 79, 83, 88, 93, 100, 105, 110, 118, 133, 138.",
+    "Subparagraphs (1., 2., 3.) use existing 'SubParagraph' style; several missing: 6, 8, 10, 15, 21, 27, 33, 49, 55, 63, 68, 116, 121, 125, 130.",
+    "No sub-subparagraphs (a., b.) detected in this document.",
+    "EndSection style exists and is correctly applied to paragraph 140."
+  ]
+}

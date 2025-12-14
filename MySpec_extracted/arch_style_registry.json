@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "source_docx": "MySpec.docx",
+  "roles": {
+    "SectionID": {
+      "style_id": "CSI_SectionID__ARCH",
+      "exemplar_paragraph_index": 0,
+      "style_name": "CSI Section ID (Architect Template)"
+    },
+    "SectionTitle": {
+      "style_id": "CSI_SectionName__ARCH",
+      "exemplar_paragraph_index": 1,
+      "style_name": "CSI Section Name (Architect Template)"
+    },
+    "PART": {
+      "style_id": "SectionTitle",
+      "exemplar_paragraph_index": 2,
+      "style_name": "Section Title"
+    },
+    "ARTICLE": {
+      "style_id": "Article",
+      "exemplar_paragraph_index": 3,
+      "style_name": "Article"
+    },
+    "PARAGRAPH": {
+      "style_id": "SpecParagraph",
+      "exemplar_paragraph_index": 4,
+      "style_name": "Spec Paragraph"
+    },
+    "SUBPARAGRAPH": {
+      "style_id": "SubParagraph",
+      "exemplar_paragraph_index": 5,
+      "style_name": "Sub Paragraph"
+    }
+  }
+}
