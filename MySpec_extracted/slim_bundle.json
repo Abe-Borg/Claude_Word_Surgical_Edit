@@ -1,0 +1,3214 @@
+{
+  "stability": {
+    "header_footer_hashes": {
+      "word/header1.xml": "7e93993ea244e9aae7fe2cdc7f262fc6d9973e1f47b2261da79a3d0145a07676",
+      "word/footer1.xml": "2b2681ab17a105e62ccd4138c5c77ed059a66e019bd8d0d51150ad88a1da9dd1"
+    },
+    "sectPr_hash": "a6ab7c3c7679bc72fcbd4536c0a464f13d1379ed2222497fd53c657adaf21678"
+  },
+  "paragraphs": [
+    {
+      "paragraph_index": 0,
+      "text": "SECTION 23 05 93",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "jc": "center",
+        "spacing": {
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 1,
+      "text": "TESTING, ADJUSTING, AND BALANCING FOR HVAC",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "jc": "center",
+        "spacing": {
+          "after": "360"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 2,
+      "text": "PART 1 - GENERAL",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "spacing": {
+          "before": "360",
+          "after": "240"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 3,
+      "text": "1.01 SUMMARY",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 4,
+      "text": "A. Section Includes:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 5,
+      "text": "1. Testing, adjusting, and balancing of air systems.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 6,
+      "text": "2. Testing, adjusting, and balancing of hydronic systems.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 7,
+      "text": "3. Measuring and reporting HVAC system performance.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 8,
+      "text": "4. Verification of system operation.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 9,
+      "text": "B. Related Sections:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 10,
+      "text": "1. Section 23 09 00 - Instrumentation and Control for HVAC.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 11,
+      "text": "2. Section 23 21 13 - Hydronic Piping.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 12,
+      "text": "3. Section 23 31 13 - Metal Ducts.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 13,
+      "text": "4. Section 23 33 00 - Air Duct Accessories.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 14,
+      "text": "5. Section 23 37 13 - Diffusers, Registers, and Grilles.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 15,
+      "text": "6. Section 23 73 00 - Indoor Central-Station Air-Handling Units.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 16,
+      "text": "1.02 REFERENCES",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 17,
+      "text": "A. ASHRAE Publications:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 18,
+      "text": "1. ASHRAE Handbook - Fundamentals.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 19,
+      "text": "2. ASHRAE Handbook - HVAC Applications.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 20,
+      "text": "3. ASHRAE/IES Standard 90.1 - Energy Standard for Buildings Except Low-Rise Residential Buildings.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 21,
+      "text": "B. Associated Air Balance Council (AABC):",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 22,
+      "text": "1. AABC National Standards for Total System Balance.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 23,
+      "text": "2. AABC Test and Balance Procedures.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 24,
+      "text": "C. National Environmental Balancing Bureau (NEBB):",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 25,
+      "text": "1. NEBB Procedural Standards for Testing, Adjusting, and Balancing of Environmental Systems.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 26,
+      "text": "D. Sheet Metal and Air Conditioning Contractors' National Association (SMACNA):",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 27,
+      "text": "1. SMACNA - HVAC Systems Testing, Adjusting, and Balancing.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 28,
+      "text": "E. Testing, Adjusting, and Balancing Bureau (TABB):",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 29,
+      "text": "1. TABB International Standards for Environmental Systems Balance.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 30,
+      "text": "1.03 DEFINITIONS",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 31,
+      "text": "A. Testing: Determination of quantitative performance of equipment.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 32,
+      "text": "B. Adjusting: Regulation of fluid flow rates and electrical characteristics to achieve design performance.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 33,
+      "text": "C. Balancing: Proportional adjustment of system flows to achieve design or specified values.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 34,
+      "text": "D. Procedural Standards: AABC National Standards, NEBB Procedural Standards, or TABB International Standards.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 35,
+      "text": "E. Report Forms: AABC National Standards, NEBB Procedural Standards, or TABB International Standards report forms.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 36,
+      "text": "1.04 ACTION SUBMITTALS",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 37,
+      "text": "A. TAB Plan: Submit a written TAB plan prior to commencing work, including:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 38,
+      "text": "1. Instruments to be used.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 39,
+      "text": "2. Measurement procedures.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 40,
+      "text": "3. Procedures for addressing deficiencies.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 41,
+      "text": "4. Sequencing of TAB activities.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 42,
+      "text": "B. Draft Reports: Submit draft TAB reports for review prior to final reports.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 43,
+      "text": "C. Final Reports: Submit final TAB reports after completion and acceptance of all TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 44,
+      "text": "1.05 INFORMATIONAL SUBMITTALS",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 45,
+      "text": "A. Qualification Data: For TAB firm and TAB supervisor.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 46,
+      "text": "B. Instrument Calibration Reports: Submit calibration certificates for all instruments used.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 47,
+      "text": "C. Field Reports: Progress reports during TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 48,
+      "text": "1.06 QUALITY ASSURANCE",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 49,
+      "text": "A. TAB Firm Qualifications:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 50,
+      "text": "1. Certified by AABC, NEBB, or TABB.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 51,
+      "text": "2. Minimum 5 years experience in TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 52,
+      "text": "3. Experience with projects of similar size and complexity.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 53,
+      "text": "B. TAB Supervisor Qualifications:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 54,
+      "text": "1. Certified by AABC, NEBB, or TABB.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 55,
+      "text": "2. Minimum 3 years experience as TAB supervisor.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 56,
+      "text": "3. Present on-site during TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 57,
+      "text": "C. Instrument Calibration:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 58,
+      "text": "1. Calibrate instruments within 6 months of TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 59,
+      "text": "2. Calibration traceable to NIST standards.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 60,
+      "text": "1.07 PREREQUISITES",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 61,
+      "text": "A. Verify the following before beginning TAB work:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 62,
+      "text": "1. HVAC systems are complete and operational.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 63,
+      "text": "2. Temporary filters are installed.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 64,
+      "text": "3. Duct systems are clean.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 65,
+      "text": "4. Automatic control systems are operational.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 66,
+      "text": "5. Electrical systems serving HVAC are energized.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 67,
+      "text": "6. Hydraulic systems are filled, vented, and flushed.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 68,
+      "text": "7. Pumps are operational and proper rotation verified.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 69,
+      "text": "8. Air handling units are operational.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 70,
+      "text": "1.08 COORDINATION",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 71,
+      "text": "A. Coordinate with installing contractors to ensure systems are complete.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 72,
+      "text": "B. Coordinate with controls contractor to ensure control sequences are operational.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 73,
+      "text": "C. Coordinate with Owner to schedule TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 74,
+      "text": "D. Notify Architect and Engineer minimum 5 working days prior to commencing TAB work.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 75,
+      "text": "PART 2 - PRODUCTS",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "spacing": {
+          "before": "360",
+          "after": "240"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 76,
+      "text": "2.01 INSTRUMENTS",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 77,
+      "text": "A. Provide instruments required to perform TAB work, including:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 78,
+      "text": "1. Air Measurement:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 79,
+      "text": "a. Pitot tubes and manometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 80,
+      "text": "b. Rotating vane anemometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 81,
+      "text": "c. Thermal anemometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 82,
+      "text": "d. Capture hoods.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 83,
+      "text": "e. Pressure gauges and transducers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 84,
+      "text": "2. Hydronic Measurement:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 85,
+      "text": "a. Differential pressure gauges.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 86,
+      "text": "b. Ultrasonic flow meters.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 87,
+      "text": "c. Calibrated balancing valves.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 88,
+      "text": "d. Pressure gauges.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 89,
+      "text": "3. Temperature Measurement:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 90,
+      "text": "a. Digital thermometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 91,
+      "text": "b. Infrared thermometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 92,
+      "text": "c. Temperature data loggers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 93,
+      "text": "4. Electrical Measurement:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 94,
+      "text": "a. Clamp-on ammeters.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 95,
+      "text": "b. Voltmeters.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 96,
+      "text": "c. Power analyzers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 97,
+      "text": "5. Rotational Measurement:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 98,
+      "text": "a. Contact tachometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 99,
+      "text": "b. Strobe tachometers.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 100,
+      "text": "B. Instrument Accuracy: As specified in AABC, NEBB, or TABB standards.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 101,
+      "text": "PART 3 - EXECUTION",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "spacing": {
+          "before": "360",
+          "after": "240"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 102,
+      "text": "3.01 EXAMINATION",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 103,
+      "text": "A. Verify systems are ready for TAB as described in Prerequisites.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 104,
+      "text": "B. Report deficiencies in writing to Contractor and Architect/Engineer.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 105,
+      "text": "C. Do not proceed with TAB until deficiencies are corrected.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 106,
+      "text": "3.02 GENERAL PROCEDURES",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 107,
+      "text": "A. Perform TAB in accordance with AABC, NEBB, or TABB procedural standards.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 108,
+      "text": "B. Perform preliminary system checks before adjusting and balancing.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 109,
+      "text": "C. Adjust systems to achieve design values within specified tolerances.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 110,
+      "text": "D. Mark final positions of all manual volume dampers, valves, and other adjustment devices.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 111,
+      "text": "E. Lock all balancing devices after final adjustment.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 112,
+      "text": "3.03 AIR SYSTEM BALANCING",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 113,
+      "text": "A. Procedures:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 114,
+      "text": "1. Measure and record fan performance data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 115,
+      "text": "2. Traverse duct mains to establish total air quantities.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 116,
+      "text": "3. Adjust fan speeds as required to achieve design airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 117,
+      "text": "4. Balance branch ducts proportionally.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 118,
+      "text": "5. Measure and adjust airflow at each outlet.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 119,
+      "text": "6. Record final measurements.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 120,
+      "text": "B. Air Handling Units:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 121,
+      "text": "1. Verify fan rotation.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 122,
+      "text": "2. Measure and record:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 123,
+      "text": "a. Total supply airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 124,
+      "text": "b. Total return airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 125,
+      "text": "c. Outdoor airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 126,
+      "text": "d. Exhaust airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 127,
+      "text": "e. Fan static pressure.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 128,
+      "text": "f. Fan motor amperage.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 129,
+      "text": "g. Fan RPM.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 130,
+      "text": "3. Adjust to achieve design values.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 131,
+      "text": "C. Outlets and Inlets:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 132,
+      "text": "1. Measure airflow at each supply diffuser, register, and grille.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 133,
+      "text": "2. Measure airflow at each return and exhaust inlet.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 134,
+      "text": "3. Adjust to within plus or minus 10 percent of design airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 135,
+      "text": "D. Outdoor Air:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 136,
+      "text": "1. Measure outdoor airflow at design minimum position.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 137,
+      "text": "2. Verify economizer operation and measure airflow at full outdoor air.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 138,
+      "text": "3. Adjust to achieve design outdoor air quantities.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 139,
+      "text": "3.04 HYDRONIC SYSTEM BALANCING",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 140,
+      "text": "A. Procedures:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 141,
+      "text": "1. Verify pump rotation.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 142,
+      "text": "2. Measure and record pump performance data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 143,
+      "text": "3. Adjust pump speed or impeller trim as required.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 144,
+      "text": "4. Set system pressure-regulating valves.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 145,
+      "text": "5. Balance mains and branches proportionally.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 146,
+      "text": "6. Balance terminal units.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 147,
+      "text": "7. Record final measurements.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 148,
+      "text": "B. Pumps:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 149,
+      "text": "1. Measure and record:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 150,
+      "text": "a. Total flow rate.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 151,
+      "text": "b. Suction and discharge pressure.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 152,
+      "text": "c. Differential pressure.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 153,
+      "text": "d. Pump motor amperage.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 154,
+      "text": "e. Pump RPM.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 155,
+      "text": "2. Compare with pump curves and adjust as required.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 156,
+      "text": "C. Terminal Units:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 157,
+      "text": "1. Measure flow rate at each coil or terminal unit.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 158,
+      "text": "2. Adjust balancing valves to achieve design flow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 159,
+      "text": "3. Adjust to within plus or minus 10 percent of design flow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 160,
+      "text": "D. Temperature:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 161,
+      "text": "1. Measure entering and leaving water temperatures at coils.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 162,
+      "text": "2. Calculate and verify heat transfer rates.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 163,
+      "text": "3.05 TOLERANCES",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 164,
+      "text": "A. Air Systems:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 165,
+      "text": "1. Supply, return, and exhaust fans: Plus or minus 10 percent of design airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 166,
+      "text": "2. Air terminals: Plus or minus 10 percent of design airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 167,
+      "text": "3. Outdoor air: Plus 10 percent, minus 0 percent of design airflow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 168,
+      "text": "B. Hydronic Systems:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 169,
+      "text": "1. Pumps: Plus or minus 10 percent of design flow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 170,
+      "text": "2. Terminal units: Plus or minus 10 percent of design flow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 171,
+      "text": "3. Main piping: Plus or minus 5 percent of design flow.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 172,
+      "text": "C. Temperature:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 173,
+      "text": "1. Dry bulb: Plus or minus 1 degree F.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 174,
+      "text": "2. Wet bulb: Plus or minus 1 degree F.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 175,
+      "text": "3. Water temperature: Plus or minus 0.5 degree F.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 176,
+      "text": "3.06 FINAL REPORT",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 177,
+      "text": "A. General: Prepare final TAB report in accordance with AABC, NEBB, or TABB standards.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 178,
+      "text": "B. Report Contents:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 179,
+      "text": "1. Title page with project information and TAB firm certification.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 180,
+      "text": "2. Table of contents.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 181,
+      "text": "3. Executive summary.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 182,
+      "text": "4. Instrument list with calibration dates.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 183,
+      "text": "5. System schematics showing balance points.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 184,
+      "text": "6. Air system data forms:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 185,
+      "text": "a. Air handling unit data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 186,
+      "text": "b. Fan data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 187,
+      "text": "c. Outlet/inlet data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 188,
+      "text": "d. Exhaust fan data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 189,
+      "text": "7. Hydronic system data forms:",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 190,
+      "text": "a. Pump data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 191,
+      "text": "b. Terminal unit data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 192,
+      "text": "c. Coil data.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1440"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 193,
+      "text": "8. Deficiency reports and resolutions.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 194,
+      "text": "9. Certification statement signed by TAB supervisor.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "1080"
+        },
+        "spacing": {
+          "before": "60",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 195,
+      "text": "C. Submit 3 hard copies and 1 electronic copy (PDF format) of final report.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 196,
+      "text": "3.07 VERIFICATION",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "360"
+        },
+        "spacing": {
+          "before": "240",
+          "after": "120"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 197,
+      "text": "A. Owner reserves the right to verify TAB results by spot-checking.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 198,
+      "text": "B. If spot-check measurements differ from reported values by more than 10 percent, perform additional verification at no additional cost.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 199,
+      "text": "C. If additional verification confirms discrepancies, re-balance affected systems and re-submit reports at no additional cost.",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "ind": {
+          "left": "720"
+        },
+        "spacing": {
+          "before": "120",
+          "after": "60"
+        }
+      },
+      "contains_sectPr": false
+    },
+    {
+      "paragraph_index": 200,
+      "text": "END OF SECTION 23 05 93",
+      "pStyle": null,
+      "numPr": null,
+      "pPr_hints": {
+        "jc": "center",
+        "spacing": {
+          "before": "480"
+        }
+      },
+      "contains_sectPr": false
+    }
+  ],
+  "style_catalog": {},
+  "numbering_catalog": {
+    "nums": {},
+    "abstracts": {}
+  }
+}
