@@ -32,27 +32,44 @@ You are not allowed to describe or prescribe formatting.
 Instead, when a new style is needed, you must reference an exemplar paragraph using derive_from_paragraph_index.
 Any attempt to specify alignment, indentation, spacing, fonts, or numbering is forbidden.
 
-
 Goal: render-perfect output while normalizing CSI semantics using paragraph styles (w:pStyle).
 
 Rules:
 1) Do not propose changes to headers/footers or section properties (sectPr). Those must remain unchanged.
 2) Prefer reusing existing template styles if they match the current appearance.
-3) If a CSI role exists but paragraphs lack a style, propose creating a template-namespaced style that matches the current appearance:
-   - CSI_SectionTitle__ARCH
+3) If a CSI role exists but paragraphs lack a style, propose creating a template-namespaced style that matches the current appearance
+   (via derive_from_paragraph_index only). Allowed CSI_*__ARCH styleIds:
+   - CSI_SectionTitle__ARCH        (single-paragraph section header, if applicable)
+   - CSI_SectionID__ARCH           (section number line, e.g. "SECTION 23 31 13")
+   - CSI_SectionName__ARCH         (section name line, e.g. "METAL DUCTS")
    - CSI_Part__ARCH
    - CSI_Article__ARCH
    - CSI_Paragraph__ARCH
    - CSI_Subparagraph__ARCH
    - CSI_Subsubparagraph__ARCH
-4) If you create a new CSI_*__ARCH style, you must choose a derive_from_paragraph_index that is a “clean” exemplar of that role (not END OF SECTION, not blank, not a section break, not a weird edge-case).
+4) If you create a new CSI_*__ARCH style, choose a derive_from_paragraph_index that is a “clean” exemplar of that role
+   (not END OF SECTION, not blank, not a section break, not a weird edge-case).
 5) Determine hierarchy using text patterns AND numbering/indent hints:
-   - PART headings: “PART 1”, “PART 2”, “PART 3”
-   - Articles: “1.01”, “1.02”… (often under PART)
-   - Paragraphs: “A.” “B.” …
-   - Subparagraphs: “1.” “2.” … under A./B.
-   - Sub-subparagraphs: “a.” “b.” … under 1./2. and typically indented
-6) Output must be valid JSON only.
+   - PART headings: "PART 1", "PART 2", "PART 3"
+   - Articles: "1.01", "1.02"… (often under PART)
+   - Paragraphs: "A." "B." …
+   - Subparagraphs: "1." "2." … under A./B.
+   - Sub-subparagraphs: "a." "b." … under 1./2. and typically indented
+6) You MUST output a deterministic role→style mapping under the top-level key "roles".
+   This is a contract file we will write downstream (arch_style_registry.json). Role keys must be EXACTLY:
+   - SectionID (optional; only if section number line exists as its own paragraph)
+   - SectionTitle (the section NAME line; e.g. "METAL DUCTS")
+   - PART
+   - ARTICLE
+   - PARAGRAPH
+   - SUBPARAGRAPH
+   - SUBSUBPARAGRAPH
+   For each role you include, you must provide:
+   - styleId: the EXACT Word w:styleId string to use (either existing or created)
+   - exemplar_paragraph_index: the paragraph_index you used as the exemplar for that role.
+     If styleId is a CSI_*__ARCH style you created in create_styles, exemplar_paragraph_index MUST equal that style’s derive_from_paragraph_index.
+   If a role does not exist in this document, omit it (do NOT fabricate).
+7) Output must be valid JSON only.
 
 Output schema:
 {
@@ -68,9 +85,12 @@ Output schema:
   "apply_pStyle": [
     { "paragraph_index": 12, "styleId": "CSI_Part__ARCH" }
   ],
+  "roles": {
+    "SectionTitle": { "styleId": "CSI_SectionName__ARCH", "exemplar_paragraph_index": 1 },
+    "PART":        { "styleId": "SectionTitle",           "exemplar_paragraph_index": 12 }
+  },
   "notes": ["..."]
 }
-
 
 Notes:
 - Use paragraph_index from the provided bundle.
@@ -81,12 +101,14 @@ Notes:
 
 SLIM_RUN_INSTRUCTION_DEFAULT = r"""Task:
 Using the slim bundle, normalize CSI semantics by ensuring consistent paragraph styles for:
-- Section Title
+- Section header (SectionID optional + SectionTitle (section name line))
 - PART headings
 - Articles (1.01…)
 - Paragraphs (A., B.)
 - Subparagraphs (1., 2.)
 - Sub-subparagraphs (a., b.)
+
+You MUST also output a "roles" mapping (role → {styleId, exemplar_paragraph_index}) as described in the master prompt.
 
 Constraints:
 - Preserve visual formatting (render-perfect).
@@ -1097,14 +1119,17 @@ class DocxDecomposer:
         
         print(f"Reconstructing document from {self.extract_dir}...")
         
-        # Create a new ZIP file
+        # Create a new ZIP file using the ORIGINAL package member list.
+        # This prevents accidentally bundling workspace artifacts (slim_bundle.json, prompts_slim/, instructions.json, arch_style_registry.json, etc.)
+        with zipfile.ZipFile(self.docx_path, 'r') as zin:
+            members = [m for m in zin.namelist() if m and not m.endswith("/")]
+
         with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as docx:
-            # Walk through all files in the extracted directory
-            for file_path in self.extract_dir.rglob('*'):
-                if file_path.is_file():
-                    # Get the relative path for the archive
-                    arcname = file_path.relative_to(self.extract_dir)
-                    docx.write(file_path, arcname)
+            for arcname in members:
+                file_path = self.extract_dir / arcname
+                if not file_path.exists() or not file_path.is_file():
+                    raise FileNotFoundError(f"Missing expected DOCX part in extracted folder: {arcname}")
+                docx.write(file_path, arcname)
         
         print(f"Reconstruction complete: {output_path}")
         return output_path
@@ -1200,6 +1225,8 @@ class DocxDecomposer:
         instructions = json.loads(instructions_json_path.read_text(encoding="utf-8"))
 
         apply_instructions(self.extract_dir, instructions)
+        registry_path = emit_arch_style_registry(self.extract_dir, self.docx_path.name, instructions)
+        print(f"arch_style_registry.json written: {registry_path}")
         return self.reconstruct(output_path=output_docx_path)
 
 
@@ -1225,6 +1252,8 @@ def main():
 
     parser.add_argument("--use-extract-dir", default=None, help="Use an existing extracted folder (skip extract/delete)")
 
+    parser.add_argument("--analysis", action="store_true", help="Write full markdown analysis report (SLOW)")
+
 
     # ✅ Parse args FIRST
     args = parser.parse_args()
@@ -1247,7 +1276,10 @@ def main():
     else:
         extract_dir = decomposer.extract(output_dir=args.extract_dir)
 
-    analysis_path = decomposer.save_analysis()
+    analysis_path = None
+    if args.analysis:
+        analysis_path = decomposer.save_analysis()
+
 
 
     # -------------------------------
@@ -1276,29 +1308,6 @@ def main():
         return
 
     # -------------------------------
-    # FULL XML NORMALIZE (LEGACY)
-    # -------------------------------
-    if args.normalize:
-        decomposer.write_normalize_bundle()
-        print("\nNEXT STEP:")
-        print(f"- Open: {extract_dir / 'bundle.json'}")
-        print(f"- Open: {extract_dir / 'prompts' / 'master_prompt.txt'}")
-        print("- Paste those into Claude")
-        return
-
-    # -------------------------------
-    # APPLY FULL XML EDITS (LEGACY)
-    # -------------------------------
-    if args.apply_edits:
-        out = decomposer.apply_edits_and_rebuild(
-            args.apply_edits,
-            output_docx_path=args.output_docx
-        )
-        print(f"\nRebuilt docx: {out}")
-        print(f"Diffs written to: {extract_dir / 'patches'}")
-        return
-
-    # -------------------------------
     # DEFAULT: simple extract + rebuild
     # -------------------------------
     reconstructed_path = decomposer.reconstruct(output_path=args.output_docx)
@@ -1307,7 +1316,7 @@ def main():
     print("=" * 60)
     print(f"Original document:      {args.docx_path}")
     print(f"Extracted to:           {extract_dir}")
-    print(f"Analysis report:        {analysis_path}")
+    print(f"Analysis report:        {analysis_path or '(not generated)'}")
     print(f"Reconstructed document: {reconstructed_path}")
 
 
@@ -1806,7 +1815,7 @@ def derive_style_def_from_paragraph(styleId: str, name: str, p_xml: str, based_o
         "styleId": styleId,
         "name": name,
         "type": "paragraph",
-        "based_on": based_on,
+        "basedOn": based_on,
         "pPr_inner": ppr_inner,
         "rPr_inner": rpr_inner,
     }
@@ -1884,14 +1893,35 @@ def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
 
 
 def validate_instructions(instructions: Dict[str, Any]) -> None:
-    allowed_keys = {"create_styles", "apply_pStyle", "notes"}
+    """
+    Validate structure-only instruction JSON.
+
+    Contract:
+    - LLM may ONLY point to exemplar paragraphs (derive_from_paragraph_index) and choose styleIds to apply via w:pStyle.
+    - LLM must NOT describe formatting (no pPr/rPr in JSON).
+    - LLM MUST provide a deterministic "roles" mapping for arch_style_registry.json.
+    """
+    allowed_keys = {"create_styles", "apply_pStyle", "roles", "notes"}
     extra = set(instructions.keys()) - allowed_keys
     if extra:
         raise ValueError(f"Invalid instruction keys: {extra}")
 
-    # Validate create_styles (LLM must NOT provide formatting; only exemplar mapping)
-    seen_style_ids = set()
-    for sd in instructions.get("create_styles", []):
+    # ----------------------------
+    # create_styles
+    # ----------------------------
+    allowed_new_style_ids: Set[str] = {
+        "CSI_SectionTitle__ARCH",
+        "CSI_SectionID__ARCH",
+        "CSI_SectionName__ARCH",
+        "CSI_Part__ARCH",
+        "CSI_Article__ARCH",
+        "CSI_Paragraph__ARCH",
+        "CSI_Subparagraph__ARCH",
+        "CSI_Subsubparagraph__ARCH",
+    }
+
+    seen_style_ids: Set[str] = set()
+    for sd in instructions.get("create_styles", []) or []:
         if not isinstance(sd, dict):
             raise ValueError("create_styles entries must be objects")
 
@@ -1901,6 +1931,13 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         if sid in seen_style_ids:
             raise ValueError(f"Duplicate styleId: {sid}")
         seen_style_ids.add(sid)
+
+        # Enforce CSI namespace for *new* styles to avoid collisions with architect styles.
+        if not (sid.startswith("CSI_") and sid.endswith("__ARCH")):
+            raise ValueError(f"Style {sid}: create_styles styleId must be namespaced CSI_*__ARCH")
+
+        if sid not in allowed_new_style_ids:
+            raise ValueError(f"Style {sid}: styleId is not in the allowed CSI_*__ARCH list: {sorted(allowed_new_style_ids)}")
 
         # LLM is forbidden from specifying formatting directly
         if "pPr" in sd or "rPr" in sd or "pPr_inner" in sd or "rPr_inner" in sd:
@@ -1928,21 +1965,73 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         if "role" in sd and sd["role"] is not None and not isinstance(sd["role"], str):
             raise ValueError(f"Style {sid}: role must be a string if provided.")
 
-    # Validate apply_pStyle
-    seen_para = set()
-    for ap in instructions.get("apply_pStyle", []):
+    created_style_src_idx: Dict[str, int] = {
+        sd["styleId"]: sd["derive_from_paragraph_index"] for sd in (instructions.get("create_styles") or [])
+        if isinstance(sd, dict) and isinstance(sd.get("styleId"), str) and isinstance(sd.get("derive_from_paragraph_index"), int)
+    }
+
+    # ----------------------------
+    # apply_pStyle
+    # ----------------------------
+    seen_para: Set[int] = set()
+    for ap in instructions.get("apply_pStyle", []) or []:
         if not isinstance(ap, dict):
             raise ValueError("apply_pStyle entries must be objects")
         idx = ap.get("paragraph_index")
         sid = ap.get("styleId")
         if not isinstance(idx, int) or idx < 0:
             raise ValueError(f"Invalid paragraph_index: {idx}")
-        if not isinstance(sid, str):
-            raise ValueError(f"Invalid styleId for paragraph {idx}")
+        if not isinstance(sid, str) or not sid:
+            raise ValueError(f"Invalid styleId for paragraph {idx}: {sid}")
         if idx in seen_para:
-            raise ValueError(f"Duplicate paragraph_index: {idx}")
+            raise ValueError(f"Duplicate paragraph_index in apply_pStyle: {idx}")
         seen_para.add(idx)
 
+        extra_fields = set(ap.keys()) - {"paragraph_index", "styleId"}
+        if extra_fields:
+            raise ValueError(f"apply_pStyle[{idx}] has invalid fields: {extra_fields}")
+
+    # ----------------------------
+    # roles (REQUIRED)
+    # ----------------------------
+    roles = instructions.get("roles", None)
+    if roles is None:
+        raise ValueError("Missing required top-level key: 'roles' (needed for arch_style_registry.json)")
+    if not isinstance(roles, dict):
+        raise ValueError("'roles' must be an object mapping role -> {styleId, exemplar_paragraph_index}")
+
+    allowed_roles = {
+        "SectionID",
+        "SectionTitle",
+        "PART",
+        "ARTICLE",
+        "PARAGRAPH",
+        "SUBPARAGRAPH",
+        "SUBSUBPARAGRAPH",
+    }
+    for role, spec in roles.items():
+        if role not in allowed_roles:
+            raise ValueError(f"Unknown role '{role}'. Allowed roles: {sorted(allowed_roles)}")
+        if not isinstance(spec, dict):
+            raise ValueError(f"roles['{role}'] must be an object")
+        extra_fields = set(spec.keys()) - {"styleId", "exemplar_paragraph_index", "style_name"}
+        if extra_fields:
+            raise ValueError(f"roles['{role}'] has invalid fields: {extra_fields}")
+
+        sid = spec.get("styleId")
+        ex = spec.get("exemplar_paragraph_index")
+
+        if not isinstance(sid, str) or not sid:
+            raise ValueError(f"roles['{role}'].styleId must be a non-empty string")
+        if not isinstance(ex, int) or ex < 0:
+            raise ValueError(f"roles['{role}'].exemplar_paragraph_index must be a non-negative integer")
+
+        # If this role points to a CSI_*__ARCH style we created, the exemplar MUST match the derivation source.
+        if sid in created_style_src_idx and ex != created_style_src_idx[sid]:
+            raise ValueError(
+                f"roles['{role}'] exemplar_paragraph_index ({ex}) must equal derive_from_paragraph_index "
+                f"({created_style_src_idx[sid]}) for created styleId '{sid}'"
+            )
 
 def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     validate_instructions(instructions)
@@ -1981,6 +2070,34 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
     styles_new = insert_styles_into_styles_xml(styles_text, derived_blocks)
     if styles_new != styles_text:
         styles_path.write_text(styles_new, encoding="utf-8")
+
+    # Validate that all referenced styleIds exist in styles.xml AFTER insertion.
+    styles_text_final = styles_new
+    style_ids_in_styles = set(re.findall(r'w:styleId="([^"]+)"', styles_text_final))
+
+    # create_styles must exist (inserted or already present)
+    for sd in style_defs:
+        sid = sd["styleId"]
+        if sid not in style_ids_in_styles:
+            raise ValueError(f"create_styles styleId not found in styles.xml after insertion: {sid}")
+
+    # apply_pStyle must reference real styles
+    for item in (instructions.get("apply_pStyle") or []):
+        sid = item["styleId"]
+        if sid not in style_ids_in_styles:
+            raise ValueError(f"apply_pStyle references unknown styleId (not in styles.xml): {sid}")
+
+    # roles must reference real styles and clean exemplar paragraphs
+    roles = instructions.get("roles") or {}
+    for role, spec in roles.items():
+        sid = spec["styleId"]
+        ex = int(spec["exemplar_paragraph_index"])
+        if sid not in style_ids_in_styles:
+            raise ValueError(f"roles['{role}'] references unknown styleId (not in styles.xml): {sid}")
+        if ex < 0 or ex >= len(para_blocks):
+            raise ValueError(f"roles['{role}'] exemplar_paragraph_index out of range: {ex}")
+        if paragraph_contains_sectpr(para_blocks[ex]):
+            raise ValueError(f"roles['{role}'] exemplar paragraph {ex} contains sectPr; refuse.")
 
     # 2) Apply paragraph styles by index (pStyle insertion ONLY)
     apply_list = instructions.get("apply_pStyle") or []
@@ -2039,6 +2156,70 @@ def sanitize_style_def(sd: Dict[str, Any]) -> Dict[str, Any]:
 
 
 
+
+
+def _build_style_name_map(styles_xml_path: Path) -> Dict[str, str]:
+    """
+    Return {styleId -> style name} from word/styles.xml.
+    Used only for arch_style_registry.json (optional human-readable metadata).
+    """
+    if not styles_xml_path.exists():
+        return {}
+
+    W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    q_style = f".//{{{W_NS}}}style"
+    q_name = f"{{{W_NS}}}name"
+    attr_styleId = f"{{{W_NS}}}styleId"
+    attr_val = f"{{{W_NS}}}val"
+
+    out: Dict[str, str] = {}
+    tree = ET.parse(styles_xml_path)
+    root = tree.getroot()
+    for st in root.findall(q_style):
+        sid = st.get(attr_styleId)
+        if not sid:
+            continue
+        name_el = st.find(q_name)
+        if name_el is not None:
+            nm = name_el.get(attr_val)
+            if nm:
+                out[sid] = nm
+    return out
+
+
+def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructions: Dict[str, Any]) -> Path:
+    """
+    Write arch_style_registry.json into the extracted folder.
+
+    This file is the Phase 1 → Phase 2 contract:
+    CSI role -> exact w:styleId (+ exemplar paragraph index).
+    """
+    roles = instructions.get("roles") or {}
+    styles_path = extract_dir / "word" / "styles.xml"
+    name_map = _build_style_name_map(styles_path)
+
+    out_roles: Dict[str, Any] = {}
+    for role, spec in roles.items():
+        style_id = spec["styleId"]
+        exemplar_idx = int(spec["exemplar_paragraph_index"])
+        entry: Dict[str, Any] = {
+            "style_id": style_id,
+            "exemplar_paragraph_index": exemplar_idx,
+        }
+        style_name = name_map.get(style_id)
+        if style_name:
+            entry["style_name"] = style_name
+        out_roles[role] = entry
+
+    payload = {
+        "version": 1,
+        "source_docx": source_docx_name,
+        "roles": out_roles,
+    }
+
+    out_path = extract_dir / "arch_style_registry.json"
+    out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return out_path
 def snapshot_doc_rels_hash(extract_dir: Path) -> str:
     rels_path = extract_dir / "word" / "_rels" / "document.xml.rels"
     if not rels_path.exists():
