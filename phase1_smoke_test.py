@@ -15,6 +15,8 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+import time
+
 
 
 def validate_registry(path: Path) -> None:
@@ -72,10 +74,14 @@ def run() -> None:
     # IMPORTANT: assumes you renamed/overwrote docx_decomposer.py with lean Phase-1 script
     exe = [sys.executable, "docx_decomposer.py", str(docx)]
 
-    subprocess.check_call(exe + ["--normalize-slim"])
-    subprocess.check_call(exe + ["--apply-instructions", str(instr)])
+    stamp = time.strftime("%Y%m%d_%H%M%S")
+    extract_dir = Path(f"{docx.stem}_extracted__smoke__{stamp}")
 
-    reg = Path(f"{docx.stem}_extracted") / "arch_style_registry.json"
+    subprocess.check_call(exe + ["--extract-dir", str(extract_dir), "--normalize-slim"])
+    subprocess.check_call(exe + ["--extract-dir", str(extract_dir), "--apply-instructions", str(instr)])
+
+    reg = extract_dir / "arch_style_registry.json"
+
     if not reg.exists():
         raise FileNotFoundError(f"Expected registry at: {reg}")
 
