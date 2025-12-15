@@ -778,14 +778,7 @@ def main() -> None:
         bundle = build_slim_bundle(extract_dir)
         (extract_dir / "slim_bundle.json").write_text(json.dumps(bundle, indent=2), encoding="utf-8")
 
-        mp = Path(args.master_prompt)
-        ri = Path(args.run_instruction)
-        if not mp.exists():
-            raise FileNotFoundError(f"master prompt file not found: {mp}")
-        if not ri.exists():
-            raise FileNotFoundError(f"run instruction file not found: {ri}")
-
-        prompts_dir = write_prompts(extract_dir, mp, ri)
+        
 
         print(f"Slim bundle written: {extract_dir / 'slim_bundle.json'}")
         print(f"Slim prompts written: {prompts_dir}")
