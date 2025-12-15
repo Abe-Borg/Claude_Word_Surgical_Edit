@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "arch_style_registry.json (v1)",
+  "type": "object",
+  "required": ["version", "source_docx", "roles"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "source_docx": { "type": "string", "minLength": 1 },
+    "roles": {
+      "type": "object",
+      "required": [
+        "SectionID",
+        "SectionTitle",
+        "PART",
+        "ARTICLE",
+        "PARAGRAPH",
+        "SUBPARAGRAPH",
+        "SUBSUBPARAGRAPH"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "SectionID": { "$ref": "#/$defs/roleSpec" },
+        "SectionTitle": { "$ref": "#/$defs/roleSpec" },
+        "PART": { "$ref": "#/$defs/roleSpec" },
+        "ARTICLE": { "$ref": "#/$defs/roleSpec" },
+        "PARAGRAPH": { "$ref": "#/$defs/roleSpec" },
+        "SUBPARAGRAPH": { "$ref": "#/$defs/roleSpec" },
+        "SUBSUBPARAGRAPH": { "$ref": "#/$defs/roleSpec" }
+      }
+    }
+  },
+  "$defs": {
+    "roleSpec": {
+      "type": "object",
+      "required": ["style_id", "exemplar_paragraph_index"],
+      "additionalProperties": false,
+      "properties": {
+        "style_id": { "type": "string", "minLength": 1 },
+        "exemplar_paragraph_index": { "type": "integer", "minimum": 0 },
+        "style_name": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
