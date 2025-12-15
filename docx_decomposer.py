@@ -727,16 +727,7 @@ def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructi
     return out_path
 
 
-# -----------------------------
-# Prompt file handling
-# -----------------------------
 
-def write_prompts(extract_dir: Path, master_prompt_path: Path, run_instruction_path: Path) -> Path:
-    prompts_dir = extract_dir / "prompts_slim"
-    prompts_dir.mkdir(parents=True, exist_ok=True)
-    (prompts_dir / "master_prompt.txt").write_text(master_prompt_path.read_text(encoding="utf-8"), encoding="utf-8")
-    (prompts_dir / "run_instruction.txt").write_text(run_instruction_path.read_text(encoding="utf-8"), encoding="utf-8")
-    return prompts_dir
 
 
 # -----------------------------
@@ -778,15 +769,12 @@ def main() -> None:
         bundle = build_slim_bundle(extract_dir)
         (extract_dir / "slim_bundle.json").write_text(json.dumps(bundle, indent=2), encoding="utf-8")
 
-        
-
         print(f"Slim bundle written: {extract_dir / 'slim_bundle.json'}")
-        print(f"Slim prompts written: {prompts_dir}")
         print("\nNEXT STEP:")
-        print("- Paste prompts_slim/master_prompt.txt")
-        print("- Paste prompts_slim/run_instruction.txt")
-        print("- Paste slim_bundle.json")
-        print("- Into your LLM")
+        print("- Use the prompt files in repo root:")
+        print(f"  - {Path(args.master_prompt).resolve()}")
+        print(f"  - {Path(args.run_instruction).resolve()}")
+        print("- Paste those + slim_bundle.json into your LLM")
         print("- Save LLM output as instructions.json")
         print("- Then run: --apply-instructions instructions.json")
         return
