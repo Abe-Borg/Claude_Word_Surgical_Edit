@@ -727,9 +727,6 @@ def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructi
     return out_path
 
 
-
-
-
 # -----------------------------
 # CLI
 # -----------------------------
@@ -758,12 +755,21 @@ def main() -> None:
         extract_dir = Path(args.use_extract_dir)
         if not extract_dir.exists():
             raise FileNotFoundError(f"Extract dir not found: {extract_dir}")
+
     else:
         if args.extract_dir:
             extract_dir = Path(args.extract_dir)
         else:
             extract_dir = Path(f"{docx_path.stem}_extracted")
-        extract_docx(docx_path, extract_dir)
+
+        # IMPORTANT: for --apply-instructions, reuse existing extracted dir if present
+        if args.apply_instructions:
+            if not extract_dir.exists():
+                extract_docx(docx_path, extract_dir)
+        else:
+            # for --normalize-slim, start from a fresh extraction
+            extract_docx(docx_path, extract_dir)
+
 
     if args.normalize_slim:
         bundle = build_slim_bundle(extract_dir)
