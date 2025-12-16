@@ -722,7 +722,7 @@ def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructi
     }
 
     if out_path is None:
-        out_path = extract_dir / "arch_style_registry.json"
+        out_path = extract_dir / "arch_role_style_registry.json"
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return out_path
 
@@ -743,7 +743,7 @@ def main() -> None:
     ap.add_argument("--master-prompt", default="master_prompt.txt", help="Master prompt file to copy into prompts_slim/")
     ap.add_argument("--run-instruction", default="run_instruction.txt", help="Run instruction file to copy into prompts_slim/")
 
-    ap.add_argument("--registry-out", default=None, help="Optional output path for arch_style_registry.json (copy)")
+    ap.add_argument("--registry-out", default=None, help="Optional output path for arch_role_style_registry.json (copy)")
 
     args = ap.parse_args()
 
@@ -797,9 +797,9 @@ def main() -> None:
         if args.registry_out:
             outp = Path(args.registry_out)
             outp.write_text(reg_path.read_text(encoding="utf-8"), encoding="utf-8")
-            print(f"arch_style_registry.json written: {reg_path} (copied to {outp})")
+            print(f"arch_role_style_registry.json written: {reg_path} (copied to {outp})")
         else:
-            print(f"arch_style_registry.json written: {reg_path}")
+            print(f"arch_role_style_registry.json written: {reg_path}")
 
         # DO NOT reconstruct a docx in Phase 1 (by design).
         return
