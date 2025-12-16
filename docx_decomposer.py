@@ -135,7 +135,24 @@ def verify_stability(extract_dir: Path, snap: StabilitySnapshot) -> None:
 
 def extract_docx(docx_path: Path, extract_dir: Path) -> None:
     if extract_dir.exists():
-        shutil.rmtree(extract_dir)
+        # OneDrive-safe deletion: retry with delay if locked
+        import time
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                shutil.rmtree(extract_dir)
+                break
+            except PermissionError as e:
+                if attempt < max_retries - 1:
+                    print(f"Folder locked (OneDrive?), retrying in 2s... ({attempt + 1}/{max_retries})")
+                    time.sleep(2)
+                else:
+                    # Last resort: rename instead of delete
+                    import uuid
+                    backup = extract_dir.with_name(f"{extract_dir.name}_old_{uuid.uuid4().hex[:8]}")
+                    print(f"Cannot delete {extract_dir}, renaming to {backup}")
+                    extract_dir.rename(backup)
+    
     extract_dir.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(docx_path, "r") as zin:
         zin.extractall(extract_dir)
