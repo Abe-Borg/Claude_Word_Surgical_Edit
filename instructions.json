@@ -1,19 +1,44 @@
 {
   "create_styles": [],
-  "apply_pStyle": [],
+  "apply_pStyle": [
+    { "paragraph_index": 25, "styleId": "PartTitle" },
+    { "paragraph_index": 5, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 7, "styleId": "ParagraphLevel" },
+    { "paragraph_index": 9, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 10, "styleId": "ArticleTitle" },
+    { "paragraph_index": 12, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 15, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 17, "styleId": "ParagraphLevel" },
+    { "paragraph_index": 19, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 22, "styleId": "ArticleTitle" },
+    { "paragraph_index": 24, "styleId": "ParagraphLevel" },
+    { "paragraph_index": 27, "styleId": "ParagraphLevel" },
+    { "paragraph_index": 29, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 35, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 37, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 39, "styleId": "SubSubparagraphLevel" },
+    { "paragraph_index": 40, "styleId": "ParagraphLevel" },
+    { "paragraph_index": 43, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 47, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 51, "styleId": "ArticleTitle" },
+    { "paragraph_index": 53, "styleId": "ParagraphLevel" },
+    { "paragraph_index": 56, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 58, "styleId": "SubparagraphLevel" },
+    { "paragraph_index": 62, "styleId": "ParagraphLevel" }
+  ],
   "roles": {
-    "SectionTitle": { "styleId": "CSILevel0", "exemplar_paragraph_index": 0 },
-    "PART": { "styleId": "CSILevel1", "exemplar_paragraph_index": 1 },
-    "ARTICLE": { "styleId": "CSILevel2", "exemplar_paragraph_index": 2 },
-    "PARAGRAPH": { "styleId": "CSILevel3", "exemplar_paragraph_index": 3 },
-    "SUBPARAGRAPH": { "styleId": "CSILevel4", "exemplar_paragraph_index": 7 },
-    "SUBSUBPARAGRAPH": { "styleId": "CSILevel5", "exemplar_paragraph_index": 16 }
+    "SectionTitle": { "styleId": "SectionTitle", "exemplar_paragraph_index": 0 },
+    "PART": { "styleId": "PartTitle", "exemplar_paragraph_index": 1 },
+    "ARTICLE": { "styleId": "ArticleTitle", "exemplar_paragraph_index": 2 },
+    "PARAGRAPH": { "styleId": "ParagraphLevel", "exemplar_paragraph_index": 3 },
+    "SUBPARAGRAPH": { "styleId": "SubparagraphLevel", "exemplar_paragraph_index": 4 },
+    "SUBSUBPARAGRAPH": { "styleId": "SubSubparagraphLevel", "exemplar_paragraph_index": 38 }
   },
   "notes": [
-    "Template already uses semantic CSI styles (CSILevel0-5) consistently applied to all content paragraphs.",
-    "No style creation or pStyle changes needed—existing styles already provide the required CSI hierarchy mapping.",
-    "CSILevel0 serves dual purpose: section title (para 0) and END OF SECTION (para 29).",
-    "Paragraphs 12, 16, 17, 22, 26, 27, 28 are empty/placeholder paragraphs—styles preserved as-is.",
-    "SectionID role omitted because section number and name are combined in a single paragraph (para 0)."
+    "Document uses combined SectionID+SectionTitle format in paragraph 0; no separate SectionID role needed.",
+    "Paragraph 25 (PART 2 - PRODUCTS) had null pStyle; assigned PartTitle to match paragraphs 1 and 50.",
+    "Multiple paragraphs used generic ListParagraph style; reassigned to appropriate CSI hierarchy styles.",
+    "Template already has well-defined styles (SectionTitle, PartTitle, ArticleTitle, ParagraphLevel, SubparagraphLevel, SubSubparagraphLevel); no new styles needed.",
+    "Hierarchy detection used numbering patterns: Articles (X.0Y), Paragraphs (A. B.), Subparagraphs (1. 2.), Sub-subparagraphs (a. b.)."
   ]
 }
