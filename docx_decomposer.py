@@ -739,7 +739,7 @@ def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructi
     }
 
     if out_path is None:
-        out_path = extract_dir / "arch_role_style_registry.json"
+        out_path = extract_dir / "arch_style_registry.json"
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return out_path
 
