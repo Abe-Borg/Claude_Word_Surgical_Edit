@@ -10,7 +10,6 @@
     "roles": {
       "type": "object",
       "required": [
-        "SectionID",
         "SectionTitle",
         "PART",
         "ARTICLE",

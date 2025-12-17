@@ -83,14 +83,14 @@ def _extract_block(xml_text: str, tag: str, ns_prefix: str = "w") -> Optional[st
     Uses regex to avoid ElementTree reformatting.
     """
     # Handle both w: and a: namespaces
-    pattern = rf"(<{ns_prefix}:{tag}\b[\s\S]*?</{ns_prefix}:{tag}>)"
+    pattern = rf"(<{ns_prefix}:{tag}\b[^>]*/?>|<{ns_prefix}:{tag}\b[\s\S]*?</{ns_prefix}:{tag}>)"
     m = re.search(pattern, xml_text)
     return m.group(1) if m else None
 
 
 def _extract_all_blocks(xml_text: str, tag: str, ns_prefix: str = "w") -> List[str]:
     """Extract all occurrences of a tag."""
-    pattern = rf"(<{ns_prefix}:{tag}\b[\s\S]*?</{ns_prefix}:{tag}>)"
+    pattern = rf"(<{ns_prefix}:{tag}\b[^>]*/?>|<{ns_prefix}:{tag}\b[\s\S]*?</{ns_prefix}:{tag}>)"
     return re.findall(pattern, xml_text)
 
 

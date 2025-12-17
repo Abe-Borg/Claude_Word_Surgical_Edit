@@ -42,6 +42,7 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
+import html
 
 import xml.etree.ElementTree as ET  # only used for styles.xml name lookup + optional catalogs
 
@@ -172,9 +173,7 @@ def paragraph_text_from_block(p_xml: str) -> str:
     texts = re.findall(r"<w:t\b[^>]*>([\s\S]*?)</w:t>", p_xml)
     if not texts:
         return ""
-    joined = "".join(texts)
-    joined = joined.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
-    joined = joined.replace("&quot;", "\"").replace("&apos;", "'")
+    joined = html.unescape("".join(texts))
     joined = re.sub(r"\s+", " ", joined).strip()
     return joined
 
