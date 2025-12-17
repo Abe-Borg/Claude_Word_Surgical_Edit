@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source_docx": "MySpec.docx",
+  "source_docx": "ARCH_TEMPLATE.docx",
   "roles": {
     "SectionTitle": {
       "style_id": "CSILevel0",
