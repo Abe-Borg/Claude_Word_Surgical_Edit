@@ -368,14 +368,23 @@ def build_slim_bundle(extract_dir: Path) -> Dict[str, Any]:
 # -----------------------------
 
 def strip_pstyle_from_paragraph(p_xml: str) -> str:
-    return re.sub(r"<w:pStyle\b[^>]*/>", "", p_xml)
+    result = re.sub(r"<w:pStyle\b[^>]*/>", "", p_xml)
+    # Also remove empty pPr that might result
+    result = re.sub(r"<w:pPr>\s*</w:pPr>", "", result)
+    result = re.sub(r"<w:pPr\s*/>", "", result)
+    return result
 
 def ppr_without_pstyle(p_xml: str) -> str:
     m = re.search(r"<w:pPr\b[\s\S]*?</w:pPr>", p_xml)
     if not m:
         return ""
     ppr = m.group(0)
+    # Remove pStyle
     ppr = re.sub(r"<w:pStyle\b[^>]*/>", "", ppr)
+    # If pPr is now empty, return empty string
+    inner = re.sub(r"<w:pPr\b[^>]*>([\s\S]*)</w:pPr>", r"\1", ppr, flags=re.S)
+    if not inner.strip():
+        return ""
     return ppr
 
 
@@ -672,6 +681,10 @@ def apply_instructions(extract_dir: Path, instructions: Dict[str, Any]) -> None:
         before = strip_pstyle_from_paragraph(original_para_blocks[idx])
         after = strip_pstyle_from_paragraph(para_blocks[idx])
         if before != after:
+            print(f"=== BEFORE (paragraph {idx}) ===")
+            print(before[:2000])
+            print(f"=== AFTER (paragraph {idx}) ===")
+            print(after[:2000])
             raise ValueError(f"Paragraph drift detected at index {idx}: changes beyond <w:pStyle>.")
     for i, pb in enumerate(para_blocks):
         if original_ppr[i] != ppr_without_pstyle(pb):

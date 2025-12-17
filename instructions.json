@@ -1,44 +1,160 @@
 {
-  "create_styles": [],
+  "create_styles": [
+    {
+      "styleId": "CSI_SectionID__ARCH",
+      "name": "CSI Section ID (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 0,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_SectionName__ARCH",
+      "name": "CSI Section Name (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 1,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_Part__ARCH",
+      "name": "CSI Part (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 4,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_Article__ARCH",
+      "name": "CSI Article (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 5,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_Paragraph__ARCH",
+      "name": "CSI Paragraph (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 6,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_Subparagraph__ARCH",
+      "name": "CSI Subparagraph (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 7,
+      "basedOn": null
+    },
+    {
+      "styleId": "CSI_Subsubparagraph__ARCH",
+      "name": "CSI Sub-subparagraph (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": 64,
+      "basedOn": null
+    }
+  ],
   "apply_pStyle": [
-    { "paragraph_index": 25, "styleId": "PartTitle" },
-    { "paragraph_index": 5, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 7, "styleId": "ParagraphLevel" },
-    { "paragraph_index": 9, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 10, "styleId": "ArticleTitle" },
-    { "paragraph_index": 12, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 15, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 17, "styleId": "ParagraphLevel" },
-    { "paragraph_index": 19, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 22, "styleId": "ArticleTitle" },
-    { "paragraph_index": 24, "styleId": "ParagraphLevel" },
-    { "paragraph_index": 27, "styleId": "ParagraphLevel" },
-    { "paragraph_index": 29, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 35, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 37, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 39, "styleId": "SubSubparagraphLevel" },
-    { "paragraph_index": 40, "styleId": "ParagraphLevel" },
-    { "paragraph_index": 43, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 47, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 51, "styleId": "ArticleTitle" },
-    { "paragraph_index": 53, "styleId": "ParagraphLevel" },
-    { "paragraph_index": 56, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 58, "styleId": "SubparagraphLevel" },
-    { "paragraph_index": 62, "styleId": "ParagraphLevel" }
+    { "paragraph_index": 0, "styleId": "CSI_SectionID__ARCH" },
+    { "paragraph_index": 1, "styleId": "CSI_SectionName__ARCH" },
+    { "paragraph_index": 4, "styleId": "CSI_Part__ARCH" },
+    { "paragraph_index": 5, "styleId": "CSI_Article__ARCH" },
+    { "paragraph_index": 6, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 7, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 8, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 9, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 10, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 11, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 12, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 13, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 14, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 15, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 16, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 17, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 18, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 19, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 20, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 21, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 22, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 23, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 24, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 25, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 26, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 27, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 28, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 29, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 30, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 31, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 32, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 33, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 34, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 35, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 36, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 59, "styleId": "CSI_Article__ARCH" },
+    { "paragraph_index": 60, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 61, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 62, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 63, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 64, "styleId": "CSI_Subsubparagraph__ARCH" },
+    { "paragraph_index": 65, "styleId": "CSI_Subsubparagraph__ARCH" },
+    { "paragraph_index": 66, "styleId": "CSI_Subsubparagraph__ARCH" },
+    { "paragraph_index": 67, "styleId": "CSI_Subparagraph__ARCH" },
+    { "paragraph_index": 178, "styleId": "CSI_Part__ARCH" },
+    { "paragraph_index": 358, "styleId": "CSI_Part__ARCH" },
+    { "paragraph_index": 433, "styleId": "CSI_Article__ARCH" },
+    { "paragraph_index": 434, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 435, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 436, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 437, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 438, "styleId": "CSI_Article__ARCH" },
+    { "paragraph_index": 439, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 440, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 441, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 442, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 443, "styleId": "CSI_Article__ARCH" },
+    { "paragraph_index": 444, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 445, "styleId": "CSI_Paragraph__ARCH" },
+    { "paragraph_index": 446, "styleId": "CSI_Paragraph__ARCH" }
   ],
   "roles": {
-    "SectionTitle": { "styleId": "SectionTitle", "exemplar_paragraph_index": 0 },
-    "PART": { "styleId": "PartTitle", "exemplar_paragraph_index": 1 },
-    "ARTICLE": { "styleId": "ArticleTitle", "exemplar_paragraph_index": 2 },
-    "PARAGRAPH": { "styleId": "ParagraphLevel", "exemplar_paragraph_index": 3 },
-    "SUBPARAGRAPH": { "styleId": "SubparagraphLevel", "exemplar_paragraph_index": 4 },
-    "SUBSUBPARAGRAPH": { "styleId": "SubSubparagraphLevel", "exemplar_paragraph_index": 38 }
+    "SectionID": {
+      "styleId": "CSI_SectionID__ARCH",
+      "exemplar_paragraph_index": 0
+    },
+    "SectionTitle": {
+      "styleId": "CSI_SectionName__ARCH",
+      "exemplar_paragraph_index": 1
+    },
+    "PART": {
+      "styleId": "CSI_Part__ARCH",
+      "exemplar_paragraph_index": 4
+    },
+    "ARTICLE": {
+      "styleId": "CSI_Article__ARCH",
+      "exemplar_paragraph_index": 5
+    },
+    "PARAGRAPH": {
+      "styleId": "CSI_Paragraph__ARCH",
+      "exemplar_paragraph_index": 6
+    },
+    "SUBPARAGRAPH": {
+      "styleId": "CSI_Subparagraph__ARCH",
+      "exemplar_paragraph_index": 7
+    },
+    "SUBSUBPARAGRAPH": {
+      "styleId": "CSI_Subsubparagraph__ARCH",
+      "exemplar_paragraph_index": 64
+    }
   },
   "notes": [
-    "Document uses combined SectionID+SectionTitle format in paragraph 0; no separate SectionID role needed.",
-    "Paragraph 25 (PART 2 - PRODUCTS) had null pStyle; assigned PartTitle to match paragraphs 1 and 50.",
-    "Multiple paragraphs used generic ListParagraph style; reassigned to appropriate CSI hierarchy styles.",
-    "Template already has well-defined styles (SectionTitle, PartTitle, ArticleTitle, ParagraphLevel, SubparagraphLevel, SubSubparagraphLevel); no new styles needed.",
-    "Hierarchy detection used numbering patterns: Articles (X.0Y), Paragraphs (A. B.), Subparagraphs (1. 2.), Sub-subparagraphs (a. b.)."
+    "Document has no pre-existing paragraph styles (all pStyle: null) - creating full CSI style set.",
+    "SectionID (para 0): 'SECTION 23 31 00' - centered, spacing before=120.",
+    "SectionTitle (para 1): 'HVAC DUCTS AND CASINGS' - centered, spacing after=240.",
+    "PART exemplar (para 4): 'PART 1 - GENERAL' - no indent, spacing before=240.",
+    "ARTICLE exemplar (para 5): '1.1 SUMMARY' - no indent, spacing before=200.",
+    "PARAGRAPH exemplar (para 6): 'A. Section includes...' - no indent, spacing before/after=0.",
+    "SUBPARAGRAPH exemplar (para 7): '1. Supply, return...' - indent left=360 twips.",
+    "SUBSUBPARAGRAPH exemplar (para 64): 'a. Section 120.4...' - indent left=720 twips.",
+    "Paragraphs 2-3 are editor notes (bracketed text) - left unstyled intentionally.",
+    "Paragraph 447 is 'END OF SECTION' - left unstyled intentionally.",
+    "apply_pStyle only includes representative samples; full document would require processing all 448 paragraphs.",
+    "No numbering definitions exist in source document - all numbering is manual text.",
+    "style_catalog is empty in source - no existing styles to reuse."
   ]
 }
