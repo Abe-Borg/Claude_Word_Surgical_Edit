@@ -739,6 +739,7 @@ def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructi
     }
 
     if out_path is None:
+        # FIXED: was arch_role_style_registry.json, now arch_style_registry.json
         out_path = extract_dir / "arch_style_registry.json"
     out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return out_path
@@ -750,17 +751,18 @@ def emit_arch_style_registry(extract_dir: Path, source_docx_name: str, instructi
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Phase 1 — Architect Template Normalization (Lean)")
-    ap.add_argument("docx_path", help="Path to architect template .docx (e.g. MySpec.docx)")
+    ap.add_argument("docx_path", help="Path to architect template .docx (e.g. ARCH_TEMPLATE.docx)")
     ap.add_argument("--extract-dir", default=None, help="Optional extraction directory (default: <stem>_extracted)")
     ap.add_argument("--use-extract-dir", default=None, help="Use an existing extracted folder (skip extract/delete)")
 
     ap.add_argument("--normalize-slim", action="store_true", help="Write slim_bundle.json + prompts_slim/")
-    ap.add_argument("--apply-instructions", default=None, help="Path to LLM instruction JSON (apply styles + emit registry)")
+    ap.add_argument("--apply-instructions", default=None, help="Path to LLM instruction JSON (apply styles + emit registries)")
 
     ap.add_argument("--master-prompt", default="master_prompt.txt", help="Master prompt file to copy into prompts_slim/")
     ap.add_argument("--run-instruction", default="run_instruction.txt", help="Run instruction file to copy into prompts_slim/")
 
-    ap.add_argument("--registry-out", default=None, help="Optional output path for arch_role_style_registry.json (copy)")
+    ap.add_argument("--registry-out", default=None, help="Optional output path for arch_style_registry.json (copy)")
+    ap.add_argument("--skip-env-extract", action="store_true", help="Skip arch_template_registry.json extraction")
 
     args = ap.parse_args()
 
@@ -777,6 +779,7 @@ def main() -> None:
         if args.extract_dir:
             extract_dir = Path(args.extract_dir)
         else:
+            # Use input docx stem for extract dir name
             extract_dir = Path(f"{docx_path.stem}_extracted")
 
         # IMPORTANT: for --apply-instructions, reuse existing extracted dir if present
@@ -809,16 +812,46 @@ def main() -> None:
         instructions = json.loads(instr_path.read_text(encoding="utf-8"))
 
         apply_instructions(extract_dir, instructions)
+        
+        # Emit arch_style_registry.json
         reg_path = emit_arch_style_registry(extract_dir, docx_path.name, instructions)
 
         if args.registry_out:
             outp = Path(args.registry_out)
             outp.write_text(reg_path.read_text(encoding="utf-8"), encoding="utf-8")
-            print(f"arch_role_style_registry.json written: {reg_path} (copied to {outp})")
+            print(f"arch_style_registry.json written: {reg_path} (copied to {outp})")
         else:
-            print(f"arch_role_style_registry.json written: {reg_path}")
+            print(f"arch_style_registry.json written: {reg_path}")
+
+        # NEW: Also emit arch_template_registry.json (environment capture)
+        if not args.skip_env_extract:
+            try:
+                from arch_env_extractor import extract_arch_template_registry
+                
+                print("\nExtracting environment (arch_template_registry.json)...")
+                env_registry = extract_arch_template_registry(extract_dir, docx_path)
+                env_path = extract_dir / "arch_template_registry.json"
+                env_path.write_text(json.dumps(env_registry, indent=2), encoding="utf-8")
+                print(f"arch_template_registry.json written: {env_path}")
+                
+                # Summary
+                inv = env_registry.get("package_inventory", {})
+                n_styles = len(env_registry.get("styles", {}).get("style_defs", []))
+                print(f"\nEnvironment captured:")
+                print(f"  - {n_styles} style definitions")
+                print(f"  - Theme: {'✓' if inv.get('has_theme') else '✗'}")
+                print(f"  - Numbering: {'✓' if inv.get('has_numbering') else '✗'}")
+                print(f"  - Headers/Footers: {'✓' if inv.get('has_header_parts') or inv.get('has_footer_parts') else '✗'}")
+                
+            except ImportError:
+                print("\nWARNING: arch_env_extractor.py not found in same directory.")
+                print("Run separately: python arch_env_extractor.py", docx_path)
+            except Exception as e:
+                print(f"\nWARNING: Environment extraction failed: {e}")
+                print("Run separately: python arch_env_extractor.py", docx_path)
 
         # DO NOT reconstruct a docx in Phase 1 (by design).
+        print("\n✓ Phase 1 complete. Both registries ready for Phase 2.")
         return
 
     ap.print_help()
