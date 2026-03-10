@@ -105,7 +105,8 @@ def classify_document(
     total_text = master_prompt + user_message
     token_est = estimate_tokens(total_text)
 
-    if token_est > 80_000:
+    n_paragraphs = len(slim_bundle.get("paragraphs", []))
+    if token_est > 80_000 or n_paragraphs > 300:
         return _classify_chunked(
             slim_bundle, master_prompt, run_instruction, client, model
         )
