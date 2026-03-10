@@ -36,7 +36,7 @@ def _call_api(
     system: str,
     user_message: str,
     model: str,
-    max_tokens: int = 16384,
+    max_tokens: int = 65536,
 ) -> str:
     """Single API call with retry logic. Returns raw response text."""
     import anthropic
