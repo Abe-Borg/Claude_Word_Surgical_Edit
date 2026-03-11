@@ -574,25 +574,26 @@ def extract_numbering(extract_dir: Path) -> Dict[str, Any]:
     
     result["numbering_xml"] = _canonicalize(numbering_xml)
     
-    # Extract individual abstractNum definitions
-    for m in re.finditer(r'(<w:abstractNum\s+w:abstractNumId="(\d+)"[\s\S]*?</w:abstractNum>)', numbering_xml):
+    # Extract individual abstractNum definitions using depth-tracking scanner
+    for block in _extract_all_blocks(numbering_xml, "abstractNum"):
+        id_m = re.search(r'w:abstractNumId="(\d+)"', block)
         result["abstract_nums"].append({
-            "abstractNumId": int(m.group(2)),
-            "xml": _canonicalize(m.group(1))
+            "abstractNumId": int(id_m.group(1)) if id_m else -1,
+            "xml": _canonicalize(block)
         })
-    
+
     # Extract num definitions (map numId -> abstractNumId)
-    for m in re.finditer(r'(<w:num\s+w:numId="(\d+)"[\s\S]*?</w:num>)', numbering_xml):
-        num_xml = m.group(1)
-        num_id = int(m.group(2))
-        
-        abs_m = re.search(r'<w:abstractNumId\s+w:val="(\d+)"', num_xml)
+    for block in _extract_all_blocks(numbering_xml, "num"):
+        id_m = re.search(r'w:numId="(\d+)"', block)
+        num_id = int(id_m.group(1)) if id_m else -1
+
+        abs_m = re.search(r'<w:abstractNumId\s+w:val="(\d+)"', block)
         abs_id = int(abs_m.group(1)) if abs_m else None
-        
+
         result["nums"].append({
             "numId": num_id,
             "abstractNumId": abs_id,
-            "xml": _canonicalize(num_xml)
+            "xml": _canonicalize(block)
         })
     
     return result
