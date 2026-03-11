@@ -28,8 +28,12 @@ from arch_env_extractor import (
     _extract_all_blocks,
     extract_doc_defaults,
     extract_style_defs,
+    extract_latent_styles,
     extract_settings,
     extract_page_layout,
+    extract_numbering,
+    extract_theme,
+    extract_fonts,
 )
 
 
@@ -450,3 +454,226 @@ class TestExtractPageLayout:
 
         # default_section should be set
         assert result["default_section"] is not None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Integration tests — extract_numbering
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestExtractNumbering:
+    """Integration tests for extract_numbering() — abstractNum/num capture."""
+
+    NUMBERING_XML = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        '<w:abstractNum w:abstractNumId="0">'
+        '<w:nsid w:val="AABB1122"/>'
+        '<w:multiLevelType w:val="hybridMultilevel"/>'
+        '<w:lvl w:ilvl="0">'
+        '<w:start w:val="1"/>'
+        '<w:numFmt w:val="decimal"/>'
+        '<w:lvlText w:val="%1."/>'
+        '<w:lvlJc w:val="left"/>'
+        '<w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>'
+        '</w:lvl>'
+        '</w:abstractNum>'
+        '<w:abstractNum w:abstractNumId="1">'
+        '<w:nsid w:val="CCDD3344"/>'
+        '<w:multiLevelType w:val="singleLevel"/>'
+        '<w:lvl w:ilvl="0">'
+        '<w:start w:val="1"/>'
+        '<w:numFmt w:val="bullet"/>'
+        '<w:lvlText w:val="&#61623;"/>'
+        '<w:lvlJc w:val="left"/>'
+        '</w:lvl>'
+        '</w:abstractNum>'
+        '<w:num w:numId="1">'
+        '<w:abstractNumId w:val="0"/>'
+        '</w:num>'
+        '<w:num w:numId="2">'
+        '<w:abstractNumId w:val="1"/>'
+        '</w:num>'
+        '</w:numbering>'
+    )
+
+    def test_numbering_extracts_abstract_nums(self, tmp_path):
+        """All abstractNum blocks are captured in full with correct IDs."""
+        word_dir = tmp_path / "word"
+        word_dir.mkdir()
+        (word_dir / "numbering.xml").write_text(self.NUMBERING_XML, encoding="utf-8")
+
+        result = extract_numbering(tmp_path)
+
+        assert len(result["abstract_nums"]) == 2
+        ids = {a["abstractNumId"] for a in result["abstract_nums"]}
+        assert ids == {0, 1}
+
+        for entry in result["abstract_nums"]:
+            assert "</w:abstractNum>" in entry["xml"]
+            assert "<w:lvl" in entry["xml"]
+            assert_parses_as_xml(entry["xml"], f"abstractNum {entry['abstractNumId']}")
+
+    def test_numbering_extracts_nums_with_abstract_ref(self, tmp_path):
+        """All num blocks are captured with correct numId and abstractNumId mapping."""
+        word_dir = tmp_path / "word"
+        word_dir.mkdir()
+        (word_dir / "numbering.xml").write_text(self.NUMBERING_XML, encoding="utf-8")
+
+        result = extract_numbering(tmp_path)
+
+        assert len(result["nums"]) == 2
+        by_id = {n["numId"]: n for n in result["nums"]}
+        assert by_id[1]["abstractNumId"] == 0
+        assert by_id[2]["abstractNumId"] == 1
+
+        for entry in result["nums"]:
+            assert "</w:num>" in entry["xml"]
+            assert_parses_as_xml(entry["xml"], f"num {entry['numId']}")
+
+    def test_numbering_missing_file_returns_empty(self, tmp_path):
+        """When numbering.xml is absent, result has None/empty fields."""
+        word_dir = tmp_path / "word"
+        word_dir.mkdir()
+
+        result = extract_numbering(tmp_path)
+
+        assert result["numbering_xml"] is None
+        assert result["abstract_nums"] == []
+        assert result["nums"] == []
+
+    def test_numbering_full_xml_preserved(self, tmp_path):
+        """The full numbering_xml is stored as a parseable string."""
+        word_dir = tmp_path / "word"
+        word_dir.mkdir()
+        (word_dir / "numbering.xml").write_text(self.NUMBERING_XML, encoding="utf-8")
+
+        result = extract_numbering(tmp_path)
+
+        assert result["numbering_xml"] is not None
+        assert "</w:numbering>" in result["numbering_xml"]
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Integration tests — extract_latent_styles
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestExtractLatentStyles:
+    """Integration tests for extract_latent_styles()."""
+
+    STYLES_XML_WITH_LATENT = (
+        '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        '<w:latentStyles w:defLockedState="0" w:defUIPriority="99"'
+        ' w:defSemiHidden="0" w:defUnhideWhenUsed="0" w:defQFormat="0" w:count="376">'
+        '<w:lsdException w:name="Normal" w:uiPriority="0" w:qFormat="1"/>'
+        '<w:lsdException w:name="heading 1" w:uiPriority="9" w:qFormat="1"/>'
+        '</w:latentStyles>'
+        '</w:styles>'
+    )
+
+    def test_latent_styles_captures_full_block(self):
+        """latentStyles block must include closing tag and all lsdException children."""
+        result = extract_latent_styles(self.STYLES_XML_WITH_LATENT)
+
+        xml = result["latentStyles_xml"]
+        assert xml is not None
+        assert "</w:latentStyles>" in xml
+        assert "lsdException" in xml
+        assert 'w:name="Normal"' in xml
+        assert_parses_as_xml(xml, "latentStyles")
+
+    def test_latent_styles_missing_returns_none(self):
+        """When no latentStyles block exists, returns None."""
+        styles_xml = (
+            '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            '<w:style w:type="paragraph" w:styleId="Normal">'
+            '<w:name w:val="Normal"/>'
+            '</w:style>'
+            '</w:styles>'
+        )
+        result = extract_latent_styles(styles_xml)
+        assert result["latentStyles_xml"] is None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Integration tests — extract_theme
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestExtractTheme:
+    """Integration tests for extract_theme()."""
+
+    THEME_XML = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+        ' name="Office Theme">'
+        '<a:themeElements>'
+        '<a:fontScheme name="Office">'
+        '<a:majorFont><a:latin typeface="Calibri Light"/></a:majorFont>'
+        '<a:minorFont><a:latin typeface="Calibri"/></a:minorFont>'
+        '</a:fontScheme>'
+        '</a:themeElements>'
+        '</a:theme>'
+    )
+
+    def test_theme_captures_full_xml(self, tmp_path):
+        """Theme XML must be stored in full."""
+        theme_dir = tmp_path / "word" / "theme"
+        theme_dir.mkdir(parents=True)
+        (theme_dir / "theme1.xml").write_text(self.THEME_XML, encoding="utf-8")
+
+        result = extract_theme(tmp_path)
+
+        assert result["theme1_xml"] is not None
+        assert "fontScheme" in result["theme1_xml"]
+        assert "majorFont" in result["theme1_xml"]
+        assert "minorFont" in result["theme1_xml"]
+
+    def test_theme_missing_returns_none(self, tmp_path):
+        """When theme file is absent, theme1_xml is None."""
+        (tmp_path / "word").mkdir()
+
+        result = extract_theme(tmp_path)
+        assert result["theme1_xml"] is None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Integration tests — extract_fonts
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestExtractFonts:
+    """Integration tests for extract_fonts()."""
+
+    FONT_TABLE_XML = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        '<w:fonts xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        '<w:font w:name="Calibri">'
+        '<w:panose1 w:val="020F0502020204030204"/>'
+        '<w:charset w:val="00"/>'
+        '<w:family w:val="swiss"/>'
+        '<w:pitch w:val="variable"/>'
+        '</w:font>'
+        '</w:fonts>'
+    )
+
+    def test_fonts_captures_full_xml(self, tmp_path):
+        """Font table XML must be stored in full with all child elements."""
+        word_dir = tmp_path / "word"
+        word_dir.mkdir()
+        (word_dir / "fontTable.xml").write_text(self.FONT_TABLE_XML, encoding="utf-8")
+
+        result = extract_fonts(tmp_path)
+
+        assert result["font_table_xml"] is not None
+        assert "</w:font>" in result["font_table_xml"]
+        assert "panose1" in result["font_table_xml"]
+        assert "charset" in result["font_table_xml"]
+
+    def test_fonts_missing_returns_none(self, tmp_path):
+        """When fontTable.xml is absent, font_table_xml is None."""
+        (tmp_path / "word").mkdir()
+
+        result = extract_fonts(tmp_path)
+        assert result["font_table_xml"] is None
