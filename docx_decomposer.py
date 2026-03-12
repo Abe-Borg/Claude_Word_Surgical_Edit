@@ -30,6 +30,7 @@ import json
 import re
 import shutil
 import zipfile
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -387,6 +388,16 @@ def xml_escape(s: str) -> str:
              .replace("'", "&apos;"))
 
 
+def _strip_rsids_for_cmp(xml_text: str) -> str:
+    """Remove rsid* attributes for comparison purposes."""
+    return re.sub(r'\s+w:rsid\w*="[^"]*"', '', xml_text)
+
+
+def _strip_proofing_for_cmp(xml_text: str) -> str:
+    """Remove proofErr elements for comparison purposes."""
+    return re.sub(r'<w:proofErr[^>]*/>', '', xml_text)
+
+
 def extract_paragraph_ppr_inner(p_xml: str) -> str:
     if re.search(r"<w:pPr\b[^>]*/>", p_xml):
         return ""
@@ -400,14 +411,49 @@ def extract_paragraph_ppr_inner(p_xml: str) -> str:
 
 
 def extract_paragraph_rpr_inner(p_xml: str) -> str:
+    """Extract the representative run-level rPr inner XML from a paragraph.
+
+    For multi-run paragraphs, selects the most common non-empty rPr
+    (after canonicalization for comparison), breaking ties by first
+    occurrence.  Returns the original (non-canonicalized) rPr to
+    preserve all formatting information.
+    """
+    originals: List[str] = []
+    canon_keys: List[str] = []
+
     for rm in re.finditer(r"<w:r\b[^>]*>(.*?)</w:r>", p_xml, flags=re.S):
         run_inner = rm.group(1)
         if "<w:t" not in run_inner:
             continue
         m = re.search(r"<w:rPr\b[^>]*>(.*?)</w:rPr>", run_inner, flags=re.S)
-        if m:
-            return m.group(1).strip()
-    return ""
+        if not m:
+            continue
+        raw = m.group(1).strip()
+        if not raw:
+            continue
+        canon = _strip_proofing_for_cmp(_strip_rsids_for_cmp(raw)).strip()
+        if not canon:
+            continue
+        originals.append(raw)
+        canon_keys.append(canon)
+
+    if not originals:
+        return ""
+
+    if len(set(canon_keys)) == 1:
+        return originals[0]
+
+    # Multiple distinct forms: pick the most common, tie-break by first occurrence
+    counts = Counter(canon_keys)
+    max_count = counts.most_common(1)[0][1]
+    best_idx = len(originals)  # sentinel
+    for canon_val, cnt in counts.items():
+        if cnt == max_count:
+            first_idx = canon_keys.index(canon_val)
+            if first_idx < best_idx:
+                best_idx = first_idx
+
+    return originals[best_idx]
 
 
 def derive_style_def_from_paragraph(styleId: str, name: str, p_xml: str, based_on: Optional[str] = None) -> Dict[str, Any]:
