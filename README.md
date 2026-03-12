@@ -174,15 +174,25 @@ These are intentional safeguards. The architect's template is sacred.
 - Comprehensive validation of LLM output before application
 
 ## Testing
+
+### Unit tests
 ```bash
-# Run smoke test with example instructions
+python -m pytest tests/
+```
+
+Regression tests cover XML extraction (`test_arch_env_extractor.py`), template registry validation (`test_arch_template_registry_validation.py`), and contract validation (`test_phase1_validator.py`).
+
+### Smoke test
+```bash
 python phase1_smoke_test.py ARCH_TEMPLATE.docx instructions.json
 ```
 
-The smoke test validates:
+The smoke test runs the full pipeline end-to-end and delegates contract validation to `phase1_validator`. It checks:
 - Both registries are created
 - arch_style_registry.json matches schema
 - All required CSI roles are present (SectionID is optional)
+- XML fragments are well-formed
+- Cross-registry consistency (style IDs exist in template registry)
 - No stability invariants violated
 
 ## Schemas

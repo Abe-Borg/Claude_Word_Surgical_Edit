@@ -19,6 +19,7 @@ Phase 2 (separate codebase) uses these artifacts to apply architect formatting t
 ├── llm_classifier.py           # LLM automation — calls Anthropic API, chunking, coverage check
 ├── gui.py                      # Tkinter GUI wrapper (thin — no business logic)
 ├── arch_env_extractor.py       # Environment capture — produces arch_template_registry.json (has CLI)
+├── phase1_validator.py         # Contract validation — validates both registries before writing
 ├── phase1_smoke_test.py        # Validation test suite
 ├── master_prompt.txt           # System prompt for LLM CSI classification
 ├── run_instruction_prompt.txt  # Task prompt for LLM
@@ -26,10 +27,12 @@ Phase 2 (separate codebase) uses these artifacts to apply architect formatting t
 ├── schemas/
 │   ├── arch_style_registry.v1.schema.json   # Formal JSON Schema for style registry
 │   └── arch_template_registry.json          # Example/template for environment registry
+├── tests/
+│   ├── test_arch_env_extractor.py           # Regression tests for XML extraction
+│   ├── test_arch_template_registry_validation.py  # Template registry validation tests
+│   └── test_phase1_validator.py             # Contract validation tests
 ├── requirements.txt            # Runtime dependencies (anthropic)
 ├── requirements-build.txt      # PyInstaller build dependencies
-├── *.docx                      # Sample architect specification templates
-├── *_extracted/                 # DOCX extraction working directories (generated)
 ├── README.md
 └── .gitignore
 ```
@@ -152,9 +155,20 @@ Has a full CLI entry point (`python arch_env_extractor.py`) in addition to being
 | `extract_package_inventory()` | Inventories which OOXML parts are present |
 | `extract_docx_to_dir()` | Extracts .docx ZIP to a directory |
 
+### `phase1_validator.py` — Contract Validation
+
+Validates both registries before they are written to disk. Imported by `phase1_smoke_test.py`.
+
+| Function | Purpose |
+|---|---|
+| `validate_template_registry()` | Validates `arch_template_registry.json` shape and XML fragment well-formedness |
+| `validate_style_registry()` | Validates `arch_style_registry.json` shape and required CSI roles |
+| `validate_cross_registry()` | Cross-checks that style IDs in the style registry exist in the template registry |
+| `validate_phase1_contracts()` | Runs all three validations above in sequence |
+
 ### `phase1_smoke_test.py` — Validation
 
-Calls `extract_docx()`, `build_slim_bundle()`, `apply_instructions()`, `build_style_registry_dict()`, and `extract_arch_template_registry()` directly. Validates both `arch_style_registry.json` and `arch_template_registry.json` via `validate_phase1_contracts()`, which checks required CSI roles, template registry structure, XML fragment well-formedness, and cross-registry consistency (style IDs referenced by the style registry must exist in the template registry). `SectionID` is optional. The test fails if either registry is missing, malformed, or contains truncated XML fragments.
+Calls `extract_docx()`, `build_slim_bundle()`, `apply_instructions()`, `build_style_registry_dict()`, and `extract_arch_template_registry()` directly. Delegates contract validation to `phase1_validator.validate_phase1_contracts()`, which checks required CSI roles, template registry structure, XML fragment well-formedness, and cross-registry consistency (style IDs referenced by the style registry must exist in the template registry). `SectionID` is optional. The test fails if either registry is missing, malformed, or contains truncated XML fragments.
 
 ## Commands
 
@@ -180,6 +194,11 @@ python arch_env_extractor.py --extract-dir TEMPLATE_extracted
 
 # Custom output path
 python arch_env_extractor.py TEMPLATE.docx --output /path/to/output.json
+```
+
+### Unit Tests
+```bash
+python -m pytest tests/
 ```
 
 ### Smoke Test
@@ -244,9 +263,10 @@ After classification, the pipeline reports what percentage of non-empty, non-sec
 - Descriptive error messages with context (paragraph index, style ID, etc.)
 
 ### Testing
-- No formal test framework (unittest/pytest) — uses `phase1_smoke_test.py` with direct function calls
+- `tests/` directory contains pytest-compatible regression tests for XML extraction and contract validation
+- `phase1_smoke_test.py` provides end-to-end validation with direct function calls (requires a .docx and instructions.json)
 - Stability verification is built into the apply pipeline itself
-- Test creates timestamped extraction directories to avoid collisions
+- Smoke test creates timestamped extraction directories to avoid collisions
 
 ## Common Pitfalls When Modifying This Code
 
@@ -260,7 +280,7 @@ After classification, the pipeline reports what percentage of non-empty, non-sec
 
 5. **`requirements.txt` is for runtime dependencies** (`anthropic`). Build/packaging dependencies are in `requirements-build.txt`.
 
-6. **The `.docx` files and `*_extracted/` directories in the repo are test data** — they are architect specification templates used for development and testing.
+6. **`.docx` files and `*_extracted/` directories are local test data** — they are generated during development and testing but are not committed to the repo.
 
 7. **`llm_classifier.py` must remain a pure module** — no CLI of its own. It is imported only by `gui.py`.
 
