@@ -19,13 +19,19 @@ Phase 2 (separate codebase) uses these artifacts to apply architect formatting t
 ├── llm_classifier.py           # LLM automation — calls Anthropic API, chunking, coverage check
 ├── gui.py                      # Tkinter GUI wrapper (thin — no business logic)
 ├── arch_env_extractor.py       # Environment capture — produces arch_template_registry.json (has CLI)
-├── phase1_smoke_test.py        # Validation test suite
+├── phase1_validator.py         # Contract validation — validates both registries before writing
+├── phase1_smoke_test.py        # Integration smoke test (extract → apply → validate)
 ├── master_prompt.txt           # System prompt for LLM CSI classification
 ├── run_instruction_prompt.txt  # Task prompt for LLM
 ├── instructions.json           # Example LLM output (style instructions)
 ├── schemas/
 │   ├── arch_style_registry.v1.schema.json   # Formal JSON Schema for style registry
 │   └── arch_template_registry.json          # Example/template for environment registry
+├── tests/
+│   ├── __init__.py
+│   ├── test_arch_env_extractor.py           # Unit/integration tests for env extractor
+│   ├── test_arch_template_registry_validation.py  # XML fragment parseability tests
+│   └── test_phase1_validator.py             # Unit tests for contract validation
 ├── requirements.txt            # Runtime dependencies (anthropic)
 ├── requirements-build.txt      # PyInstaller build dependencies
 ├── *.docx                      # Sample architect specification templates
@@ -90,23 +96,34 @@ DOCX (.docx file)
 
 | Function | Purpose |
 |---|---|
+| `sha256_bytes()` / `sha256_text()` | Hash utilities for bytes and strings |
+| `snapshot_headers_footers()` | Captures header/footer file hashes for stability checks |
+| `snapshot_doc_rels_hash()` | Captures document.xml.rels hash for stability checks |
+| `extract_sectpr_block()` | Extracts sectPr XML blocks from document.xml |
+| `snapshot_stability()` / `verify_stability()` | Hash-based invariant enforcement |
 | `extract_docx()` | Unzips .docx into workspace directory (with OneDrive lock retry) |
-| `build_slim_bundle()` | Creates minimal JSON (text + numbering hints) for LLM input |
-| `build_style_catalog()` | Builds style name/type catalog from `styles.xml` |
-| `build_numbering_catalog()` | Builds numbering definition catalog from `numbering.xml` |
 | `iter_paragraph_xml_blocks()` | Regex iterator over `<w:p>` blocks — preserves indices |
 | `paragraph_text_from_block()` | Extracts visible text from paragraph XML |
 | `paragraph_contains_sectpr()` | Checks if paragraph contains `<w:sectPr>` |
 | `paragraph_pstyle_from_block()` | Extracts existing `<w:pStyle>` value from paragraph |
 | `paragraph_numpr_from_block()` | Extracts numbering properties (numId, ilvl) |
-| `validate_instructions()` | Strict validation of LLM output before application |
-| `apply_instructions()` | Main apply logic: create styles, insert pStyle, verify stability |
-| `apply_pstyle_to_paragraph_block()` | Surgically inserts `<w:pStyle>` into a single paragraph |
+| `paragraph_ppr_hints_from_block()` | Extracts lightweight pPr hints (alignment, indent, spacing) |
+| `build_style_catalog()` | Builds style name/type catalog from `styles.xml` with basedOn chain |
+| `build_numbering_catalog()` | Builds numbering definition catalog from `numbering.xml` |
+| `build_slim_bundle()` | Creates minimal JSON (text + numbering hints) for LLM input |
+| `strip_pstyle_from_paragraph()` | Removes `<w:pStyle>` tags from paragraph XML |
+| `ppr_without_pstyle()` | Extracts pPr without pStyle |
+| `xml_escape()` | XML entity encoding for strings |
+| `extract_paragraph_ppr_inner()` | Extracts pPr inner XML from exemplar paragraph |
+| `extract_paragraph_rpr_inner()` | Extracts representative rPr inner XML (handles multi-run) |
 | `derive_style_def_from_paragraph()` | Extracts pPr/rPr from exemplar paragraph to build style definition |
 | `build_style_xml_block()` | Generates `<w:style>` XML for insertion into `styles.xml` |
 | `insert_styles_into_styles_xml()` | Inserts style blocks into `styles.xml` |
+| `validate_instructions()` | Strict validation of LLM output before application |
+| `apply_instructions()` | Main apply logic: create styles, insert pStyle, verify stability |
+| `apply_pstyle_to_paragraph_block()` | Surgically inserts `<w:pStyle>` into a single paragraph |
+| `build_style_registry_dict()` | Builds arch_style_registry payload dict (without writing to disk) |
 | `emit_arch_style_registry()` | Writes the final `arch_style_registry.json` contract |
-| `snapshot_stability()` / `verify_stability()` | Hash-based invariant enforcement |
 
 ### `llm_classifier.py` — LLM Automation
 
@@ -152,9 +169,28 @@ Has a full CLI entry point (`python arch_env_extractor.py`) in addition to being
 | `extract_package_inventory()` | Inventories which OOXML parts are present |
 | `extract_docx_to_dir()` | Extracts .docx ZIP to a directory |
 
-### `phase1_smoke_test.py` — Validation
+### `phase1_validator.py` — Contract Validation
 
-Calls `extract_docx()`, `build_slim_bundle()`, `apply_instructions()`, `build_style_registry_dict()`, and `extract_arch_template_registry()` directly. Validates both `arch_style_registry.json` and `arch_template_registry.json` via `validate_phase1_contracts()`, which checks required CSI roles, template registry structure, XML fragment well-formedness, and cross-registry consistency (style IDs referenced by the style registry must exist in the template registry). `SectionID` is optional. The test fails if either registry is missing, malformed, or contains truncated XML fragments.
+Standalone validation module — validates both registries before writing to disk. Imported by `phase1_smoke_test.py` and usable independently.
+
+| Function | Purpose |
+|---|---|
+| `validate_template_registry()` | Validates `arch_template_registry.json` structure and XML fragment well-formedness |
+| `validate_style_registry()` | Validates `arch_style_registry.json` structure, version, required roles |
+| `validate_cross_registry()` | Verifies every role `style_id` in the style registry exists in the template registry's `style_defs` |
+| `validate_phase1_contracts()` | Top-level entry: runs all three validations in sequence |
+
+### `phase1_smoke_test.py` — Integration Smoke Test
+
+Calls `extract_docx()`, `build_slim_bundle()`, `apply_instructions()`, `build_style_registry_dict()`, and `extract_arch_template_registry()` directly. Delegates registry validation to `phase1_validator.validate_phase1_contracts()`. The test fails if either registry is missing, malformed, or contains truncated XML fragments.
+
+### `tests/` — Unit and Integration Tests
+
+| File | What it tests |
+|---|---|
+| `test_phase1_validator.py` | Unit tests for all four `phase1_validator` functions (required/optional roles, cross-registry consistency, XML well-formedness) |
+| `test_arch_env_extractor.py` | Unit and integration tests for extraction functions (block extraction, XML fragment completeness) |
+| `test_arch_template_registry_validation.py` | XML fragment parseability validation for generated registry output |
 
 ## Commands
 
@@ -187,6 +223,11 @@ python arch_env_extractor.py TEMPLATE.docx --output /path/to/output.json
 python phase1_smoke_test.py TEMPLATE.docx instructions.json
 ```
 
+### Unit Tests
+```bash
+python -m pytest tests/
+```
+
 ## CSI Role Hierarchy and Allowed Style IDs
 
 The pipeline recognizes these CSI structural roles (from schema):
@@ -199,7 +240,7 @@ The pipeline recognizes these CSI structural roles (from schema):
 | `ARTICLE` | `CSI_Article__ARCH` | Required |
 | `PARAGRAPH` | `CSI_Paragraph__ARCH` | Required |
 | `SUBPARAGRAPH` | `CSI_Subparagraph__ARCH` | Required |
-| `SUBSUBPARAGRAPH` | `CSI_Subsubparagraph__ARCH` | Required |
+| `SUBSUBPARAGRAPH` | `CSI_Subsubparagraph__ARCH` | Optional |
 
 All created style IDs must match the pattern `CSI_*__ARCH`.
 
@@ -244,9 +285,10 @@ After classification, the pipeline reports what percentage of non-empty, non-sec
 - Descriptive error messages with context (paragraph index, style ID, etc.)
 
 ### Testing
-- No formal test framework (unittest/pytest) — uses `phase1_smoke_test.py` with direct function calls
+- Unit/integration tests in `tests/` directory (pytest-compatible)
+- `phase1_smoke_test.py` for end-to-end integration with real DOCX files
 - Stability verification is built into the apply pipeline itself
-- Test creates timestamped extraction directories to avoid collisions
+- Smoke test creates timestamped extraction directories to avoid collisions
 
 ## Common Pitfalls When Modifying This Code
 
@@ -267,6 +309,8 @@ After classification, the pipeline reports what percentage of non-empty, non-sec
 8. **`gui.py` must remain a thin wrapper** — no pipeline logic. It imports and calls library functions from `docx_decomposer.py`.
 
 9. **`docx_decomposer.py` is a library module only** — no CLI entry point. All user interaction goes through `gui.py`.
+
+10. **`phase1_validator.py` is the single source of truth for registry validation** — all validation logic (template registry structure, style registry roles, cross-registry consistency) lives here. Imported by `phase1_smoke_test.py`, `gui.py`, and `arch_env_extractor.py`.
 
 ## Environment Setup
 

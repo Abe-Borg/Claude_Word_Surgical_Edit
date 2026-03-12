@@ -139,7 +139,7 @@ After classification, the pipeline reports what percentage of content paragraphs
 - `CSI_Article__ARCH`
 - `CSI_Paragraph__ARCH`
 - `CSI_Subparagraph__ARCH`
-- `CSI_Subsubparagraph__ARCH`
+- `CSI_Subsubparagraph__ARCH` (optional)
 
 Each style captures exact formatting from exemplar paragraphs.
 
@@ -182,8 +182,19 @@ python phase1_smoke_test.py ARCH_TEMPLATE.docx instructions.json
 The smoke test validates:
 - Both registries are created
 - arch_style_registry.json matches schema
-- All required CSI roles are present (SectionID is optional)
+- All required CSI roles are present (SectionID and SUBSUBPARAGRAPH are optional)
 - No stability invariants violated
+- Cross-registry consistency (style IDs in style registry exist in template registry)
+
+### Unit tests
+```bash
+python -m pytest tests/
+```
+
+Unit tests cover:
+- `phase1_validator.py` — registry structure, required/optional roles, XML well-formedness, cross-registry consistency
+- `arch_env_extractor.py` — extraction functions, XML fragment completeness
+- Template registry XML fragment parseability
 
 ## Schemas
 
