@@ -144,6 +144,21 @@ def _minimal_style_registry():
     }
 
 
+def _style_registry_without_subsubparagraph():
+    """Return a valid style registry without the optional SUBSUBPARAGRAPH role."""
+    return {
+        "version": 1,
+        "source_docx": "test.docx",
+        "roles": {
+            "SectionTitle": {"style_id": "CSI_SectionTitle__ARCH", "exemplar_paragraph_index": 0},
+            "PART": {"style_id": "CSI_Part__ARCH", "exemplar_paragraph_index": 1},
+            "ARTICLE": {"style_id": "CSI_Article__ARCH", "exemplar_paragraph_index": 2},
+            "PARAGRAPH": {"style_id": "CSI_Paragraph__ARCH", "exemplar_paragraph_index": 3},
+            "SUBPARAGRAPH": {"style_id": "CSI_Subparagraph__ARCH", "exemplar_paragraph_index": 4},
+        },
+    }
+
+
 # ---------------------------------------------------------------------------
 # Template registry validation tests
 # ---------------------------------------------------------------------------
@@ -293,6 +308,25 @@ class TestValidateStyleRegistry:
         assert "SectionID" not in reg["roles"]
         validate_style_registry(reg)
 
+    def test_optional_subsubparagraph(self):
+        """SUBSUBPARAGRAPH is optional — not every spec has that hierarchy level."""
+        reg = _style_registry_without_subsubparagraph()
+        assert "SUBSUBPARAGRAPH" not in reg["roles"]
+        validate_style_registry(reg)
+
+    def test_subsubparagraph_present_still_valid(self):
+        """SUBSUBPARAGRAPH being present is also valid."""
+        reg = _minimal_style_registry()
+        assert "SUBSUBPARAGRAPH" in reg["roles"]
+        validate_style_registry(reg)
+
+    def test_unknown_role_rejected(self):
+        """Unrecognized role names must be rejected."""
+        reg = _minimal_style_registry()
+        reg["roles"]["BOGUS_ROLE"] = {"style_id": "CSI_Bogus__ARCH", "exemplar_paragraph_index": 99}
+        with pytest.raises(ValueError, match="unknown role.*BOGUS_ROLE"):
+            validate_style_registry(reg)
+
     def test_style_name_not_required(self):
         """style_name is not required on roles — only style_id is mandatory."""
         reg = _minimal_style_registry()
@@ -308,6 +342,12 @@ class TestValidateCrossRegistry:
 
     def test_valid_passes(self):
         validate_cross_registry(_minimal_style_registry(), _minimal_template_registry())
+
+    def test_valid_without_subsubparagraph(self):
+        """Cross-registry passes when SUBSUBPARAGRAPH is absent from both."""
+        style_reg = _style_registry_without_subsubparagraph()
+        tmpl_reg = _minimal_template_registry()
+        validate_cross_registry(style_reg, tmpl_reg)
 
     def test_missing_style_id_in_template(self):
         style_reg = _minimal_style_registry()
@@ -340,6 +380,13 @@ class TestValidatePhase1Contracts:
 
     def test_valid_passes(self):
         validate_phase1_contracts(_minimal_style_registry(), _minimal_template_registry())
+
+    def test_valid_without_subsubparagraph(self):
+        """Full pipeline passes when SUBSUBPARAGRAPH is absent."""
+        validate_phase1_contracts(
+            _style_registry_without_subsubparagraph(),
+            _minimal_template_registry(),
+        )
 
     def test_template_failure_stops_early(self):
         """Template validation failure should prevent style/cross checks."""

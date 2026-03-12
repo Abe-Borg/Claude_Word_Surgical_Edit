@@ -14,8 +14,7 @@
         "PART",
         "ARTICLE",
         "PARAGRAPH",
-        "SUBPARAGRAPH",
-        "SUBSUBPARAGRAPH"
+        "SUBPARAGRAPH"
       ],
       "additionalProperties": true,
       "properties": {

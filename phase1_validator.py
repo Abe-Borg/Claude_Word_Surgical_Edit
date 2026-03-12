@@ -46,14 +46,18 @@ _REQUIRED_TOP_LEVEL_KEYS = {
     "fonts",
 }
 
+# Roles that every spec document must have.
+# SectionID and SUBSUBPARAGRAPH are optional — not every document has them.
 _REQUIRED_ROLES = {
     "SectionTitle",
     "PART",
     "ARTICLE",
     "PARAGRAPH",
     "SUBPARAGRAPH",
-    "SUBSUBPARAGRAPH",
 }
+
+# All roles that are recognized (required + optional).
+_ALLOWED_ROLES = _REQUIRED_ROLES | {"SectionID", "SUBSUBPARAGRAPH"}
 
 
 # ---------------------------------------------------------------------------
@@ -223,6 +227,8 @@ def validate_style_registry(registry: Dict[str, Any]) -> None:
         raise ValueError(f"style registry roles missing: {sorted(missing)}")
 
     for role, spec in roles.items():
+        if role not in _ALLOWED_ROLES:
+            raise ValueError(f"style registry contains unknown role '{role}'")
         if not isinstance(spec, dict):
             raise ValueError(f"roles['{role}'] must be an object")
         sid = spec.get("style_id")
