@@ -153,7 +153,7 @@
     "SUBSUBPARAGRAPH exemplar (para 64): 'a. Section 120.4...' - indent left=720 twips.",
     "Paragraphs 2-3 are editor notes (bracketed text) - left unstyled intentionally.",
     "Paragraph 447 is 'END OF SECTION' - left unstyled intentionally.",
-    "apply_pStyle only includes representative samples; full document would require processing all 448 paragraphs.",
+    "apply_pStyle covers all classifiable paragraphs. Paragraphs 2-3 (editor notes), paragraph 447 (END OF SECTION), and empty/sectPr paragraphs are intentionally skipped.",
     "No numbering definitions exist in source document - all numbering is manual text.",
     "style_catalog is empty in source - no existing styles to reuse."
   ]

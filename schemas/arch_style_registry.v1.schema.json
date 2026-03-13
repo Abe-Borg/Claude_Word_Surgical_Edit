@@ -16,7 +16,7 @@
         "PARAGRAPH",
         "SUBPARAGRAPH"
       ],
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "SectionID": { "$ref": "#/$defs/roleSpec" },
         "SectionTitle": { "$ref": "#/$defs/roleSpec" },

@@ -34,6 +34,17 @@ class LogRedirector:
         pass
 
 
+def _load_prompt(script_dir: Path, filename: str) -> str:
+    """Load a prompt file with a clear error if missing."""
+    path = script_dir / filename
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Required prompt file not found: {path}\n"
+            f"Ensure '{filename}' is present alongside gui.py."
+        )
+    return path.read_text(encoding="utf-8")
+
+
 class PipelineThread(threading.Thread):
     """Runs the full Phase 1 pipeline in a background thread."""
 
@@ -83,8 +94,8 @@ class PipelineThread(threading.Thread):
 
             # 3) Read prompts
             script_dir = Path(__file__).resolve().parent
-            master_prompt = (script_dir / "master_prompt.txt").read_text(encoding="utf-8")
-            run_instruction = (script_dir / "run_instruction_prompt.txt").read_text(encoding="utf-8")
+            master_prompt = _load_prompt(script_dir, "master_prompt.txt")
+            run_instruction = _load_prompt(script_dir, "run_instruction_prompt.txt")
 
             # 4) Classify
             self._log("Classifying via LLM...")

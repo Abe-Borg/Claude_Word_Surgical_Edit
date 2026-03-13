@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 
 def estimate_tokens(text: str) -> int:
@@ -77,6 +77,7 @@ def classify_document(
     run_instruction: str,
     api_key: str,
     model: str = "claude-opus-4-6",
+    min_coverage: float = 0.90,
 ) -> dict:
     """
     Classify all paragraphs in a slim bundle using the Anthropic API.
@@ -87,12 +88,16 @@ def classify_document(
         run_instruction: Content of run_instruction_prompt.txt (task prompt).
         api_key: Anthropic API key.
         model: Model ID to use.
+        min_coverage: Minimum coverage fraction (0.0–1.0). Raises ValueError
+            if the fraction of classifiable paragraphs with style assignments
+            falls below this threshold. Default 0.90.
 
     Returns:
         Parsed instructions dict (same schema as instructions.json).
 
     Raises:
-        ValueError: If the LLM response is not valid JSON or fails validation.
+        ValueError: If the LLM response is not valid JSON, fails validation,
+            or coverage is below min_coverage.
     """
     import anthropic
     from docx_decomposer import validate_instructions
@@ -108,13 +113,24 @@ def classify_document(
 
     n_paragraphs = len(slim_bundle.get("paragraphs", []))
     if token_est > 80_000 or n_paragraphs > 300:
-        return _classify_chunked(
+        instructions = _classify_chunked(
             slim_bundle, master_prompt, run_instruction, client, model
         )
+    else:
+        raw = _call_api(client, master_prompt, user_message, model)
+        instructions = _parse_response(raw)
 
-    raw = _call_api(client, master_prompt, user_message, model)
-    instructions = _parse_response(raw)
-    validate_instructions(instructions)
+    validate_instructions(instructions, slim_bundle=slim_bundle)
+
+    # Coverage enforcement
+    coverage, styled, classifiable = compute_coverage(slim_bundle, instructions)
+    if coverage < min_coverage:
+        raise ValueError(
+            f"Coverage {coverage:.1%} ({styled}/{classifiable}) is below the "
+            f"required minimum of {min_coverage:.0%}. The LLM did not classify "
+            f"enough paragraphs."
+        )
+
     return instructions
 
 
@@ -166,6 +182,12 @@ def _classify_chunked(
         "roles": merged.get("roles", {}),
     }, indent=2)
 
+    # Track styleId per paragraph_index for collision detection
+    idx_to_style: Dict[int, str] = {
+        item["paragraph_index"]: item["styleId"]
+        for item in merged.get("apply_pStyle", [])
+    }
+
     for chunk_start, chunk_end in chunks[1:]:
         chunk_bundle = dict(slim_bundle)
         chunk_bundle["paragraphs"] = paragraphs[chunk_start:chunk_end]
@@ -184,13 +206,21 @@ def _classify_chunked(
         chunk_result = _parse_response(raw)
         chunk_apply = chunk_result.get("apply_pStyle", [])
 
-        # Merge: deduplicate by paragraph_index (later chunk wins for overlaps)
-        existing_indices = {item["paragraph_index"] for item in merged.get("apply_pStyle", [])}
+        # Merge with collision detection in overlap regions
         for item in chunk_apply:
             idx = item["paragraph_index"]
-            if idx not in existing_indices:
+            sid = item["styleId"]
+            if idx in idx_to_style:
+                if idx_to_style[idx] != sid:
+                    raise ValueError(
+                        f"Chunk merge collision at paragraph {idx}: "
+                        f"previous chunk assigned '{idx_to_style[idx]}', "
+                        f"current chunk assigned '{sid}'"
+                    )
+                # Same assignment in overlap — skip duplicate
+            else:
                 merged.setdefault("apply_pStyle", []).append(item)
-                existing_indices.add(idx)
+                idx_to_style[idx] = sid
 
     # Sort apply_pStyle by paragraph_index
     merged["apply_pStyle"] = sorted(
@@ -198,11 +228,12 @@ def _classify_chunked(
         key=lambda x: x["paragraph_index"],
     )
 
-    validate_instructions(merged)
+    # Full validation with slim_bundle for coverage + range checks
+    validate_instructions(merged, slim_bundle=slim_bundle)
     return merged
 
 
-def compute_coverage(slim_bundle: dict, instructions: dict) -> tuple:
+def compute_coverage(slim_bundle: dict, instructions: dict) -> Tuple[float, int, int]:
     """
     Compute what percentage of classifiable paragraphs received a style.
 

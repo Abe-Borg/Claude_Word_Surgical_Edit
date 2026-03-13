@@ -1,20 +1,78 @@
 Task:
-Using the slim bundle, normalize CSI semantics by ensuring consistent paragraph styles for:
-- Section header (SectionID optional + SectionTitle (section name line))
-- PART headings
-- Articles (1.01…)
-- Paragraphs (A., B.)
-- Subparagraphs (1., 2.)
-- Sub-subparagraphs (a., b.)
+Using the slim bundle, normalize CSI semantics by assigning paragraph styles to every classifiable paragraph.
 
-You MUST also output a "roles" mapping (role → {styleId, exemplar_paragraph_index}) as described in the master prompt.
+## CSI Roles and Allowed Style IDs
 
-IMPORTANT: Classify ALL paragraphs in the document, not just representative samples.
-The apply_pStyle array must be comprehensive — every content paragraph needs an entry.
-Skip only empty paragraphs, sectPr paragraphs, "END OF SECTION", and editor notes in brackets.
+You must classify paragraphs into exactly these roles:
 
-Constraints:
-- Preserve visual formatting (render-perfect).
-- Do not change headers/footers or sectPr.
-- If you create styles, do NOT describe formatting. Instead, create styles by selecting an exemplar paragraph and setting derive_from_paragraph_index.
-- Return JSON instructions only (no prose, no XML, no markdown).
+| Role               | Style ID                        | Required? |
+|--------------------|---------------------------------|-----------|
+| SectionID          | CSI_SectionID__ARCH             | Optional  |
+| SectionTitle       | CSI_SectionTitle__ARCH or CSI_SectionName__ARCH | Required |
+| PART               | CSI_Part__ARCH                  | Required  |
+| ARTICLE            | CSI_Article__ARCH               | Required  |
+| PARAGRAPH          | CSI_Paragraph__ARCH             | Required  |
+| SUBPARAGRAPH       | CSI_Subparagraph__ARCH          | Required  |
+| SUBSUBPARAGRAPH    | CSI_Subsubparagraph__ARCH       | Optional  |
+
+No other role names or style IDs are permitted.
+
+## Required JSON Output Shape
+
+Return a single JSON object with these keys (no prose, no XML, no markdown):
+
+{
+  "create_styles": [
+    {
+      "styleId": "CSI_Part__ARCH",
+      "name": "CSI Part (Architect Template)",
+      "type": "paragraph",
+      "derive_from_paragraph_index": <int>,
+      "basedOn": <string or null>
+    }
+  ],
+  "apply_pStyle": [
+    { "paragraph_index": <int>, "styleId": "<string>" }
+  ],
+  "roles": {
+    "<RoleName>": {
+      "styleId": "<string>",
+      "exemplar_paragraph_index": <int>
+    }
+  },
+  "notes": ["<string>"]
+}
+
+- "create_styles": styles to create. Only use derive_from_paragraph_index — NEVER include pPr, rPr, or any formatting fields.
+- "apply_pStyle": paragraph-level style assignments.
+- "roles": maps each CSI role to its styleId and exemplar paragraph index.
+- "notes": optional explanatory notes.
+
+## Full-Coverage Requirement
+
+IMPORTANT: Every non-skipped paragraph MUST have exactly one entry in apply_pStyle.
+Each paragraph_index must appear at most once (no duplicates).
+
+Skip ONLY these paragraphs (do NOT include them in apply_pStyle):
+- Empty paragraphs (no visible text)
+- Paragraphs containing <w:sectPr> (section break containers)
+- Paragraphs whose entire text is "END OF SECTION" (case-insensitive)
+- Editor/specifier notes: paragraphs whose text starts with "[" and ends with "]"
+
+Every other paragraph MUST receive a style assignment.
+
+## Style Reuse
+
+If the document already has a style that matches a CSI role (check the style_catalog in the slim bundle), reference it in apply_pStyle rather than creating a duplicate. Only create new styles when no suitable existing style is available.
+
+## Exemplar and Role Constraints
+
+- For each created style, derive_from_paragraph_index must point to a real content paragraph that is representative of that role.
+- For each role in "roles", exemplar_paragraph_index must equal the derive_from_paragraph_index of the corresponding created style.
+- Exemplar paragraphs must not be empty, must not contain sectPr, and must not be editor notes.
+
+## Other Constraints
+
+- Preserve visual formatting (render-perfect output).
+- Do not change headers, footers, or sectPr elements.
+- Return JSON only — no prose, no XML, no markdown wrapping.

@@ -562,7 +562,32 @@ def apply_pstyle_to_paragraph_block(p_xml: str, styleId: str) -> str:
     )
 
 
-def validate_instructions(instructions: Dict[str, Any]) -> None:
+def _classifiable_indices(slim_bundle: Dict[str, Any]) -> Set[int]:
+    """Return the set of paragraph indices that should receive a style.
+
+    Skips: empty text, sectPr carriers, "END OF SECTION", editor notes in brackets.
+    """
+    indices: Set[int] = set()
+    for p in slim_bundle.get("paragraphs", []):
+        text = (p.get("text") or "").strip()
+        if not text:
+            continue
+        if p.get("contains_sectPr", False):
+            continue
+        if text.upper() == "END OF SECTION":
+            continue
+        if text.startswith("[") and text.endswith("]"):
+            continue
+        indices.add(p["paragraph_index"])
+    return indices
+
+
+def validate_instructions(instructions: Dict[str, Any], slim_bundle: Optional[Dict[str, Any]] = None) -> None:
+    """Validate LLM classification instructions.
+
+    When *slim_bundle* is provided, also checks coverage, range, exemplar quality,
+    and style-reference consistency against the actual document.
+    """
     allowed_keys = {"create_styles", "apply_pStyle", "roles", "notes"}
     extra = set(instructions.keys()) - allowed_keys
     if extra:
@@ -579,7 +604,14 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         "CSI_Subsubparagraph__ARCH",
     }
 
+    total_paragraphs = (
+        len(slim_bundle.get("paragraphs", []))
+        if slim_bundle is not None
+        else None
+    )
+
     created_style_src_idx: Dict[str, int] = {}
+    created_style_ids: Set[str] = set()
     for sd in instructions.get("create_styles", []) or []:
         if not isinstance(sd, dict):
             raise ValueError("create_styles entries must be objects")
@@ -601,7 +633,21 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         src = sd.get("derive_from_paragraph_index")
         if src is None or not isinstance(src, int) or src < 0:
             raise ValueError(f"Style {sid}: derive_from_paragraph_index must be non-negative int")
+        if total_paragraphs is not None and src >= total_paragraphs:
+            raise ValueError(
+                f"Style {sid}: derive_from_paragraph_index ({src}) out of range "
+                f"(document has {total_paragraphs} paragraphs)"
+            )
         created_style_src_idx[sid] = src
+        created_style_ids.add(sid)
+
+    # Gather existing style IDs from slim_bundle style_catalog if available
+    existing_style_ids: Set[str] = set()
+    if slim_bundle is not None:
+        for entry in slim_bundle.get("style_catalog", []):
+            sid = entry.get("styleId") if isinstance(entry, dict) else None
+            if sid:
+                existing_style_ids.add(sid)
 
     seen_para: Set[int] = set()
     for ap in instructions.get("apply_pStyle", []) or []:
@@ -611,6 +657,11 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         sid = ap.get("styleId")
         if not isinstance(idx, int) or idx < 0:
             raise ValueError(f"Invalid paragraph_index: {idx}")
+        if total_paragraphs is not None and idx >= total_paragraphs:
+            raise ValueError(
+                f"apply_pStyle paragraph_index ({idx}) out of range "
+                f"(document has {total_paragraphs} paragraphs)"
+            )
         if not isinstance(sid, str) or not sid:
             raise ValueError(f"Invalid styleId for paragraph {idx}: {sid}")
         extra_fields = set(ap.keys()) - {"paragraph_index", "styleId"}
@@ -619,6 +670,13 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
         if idx in seen_para:
             raise ValueError(f"Duplicate paragraph_index in apply_pStyle: {idx}")
         seen_para.add(idx)
+
+        # Style reference consistency: referenced styleId must exist somewhere
+        if slim_bundle is not None and sid not in created_style_ids and sid not in existing_style_ids:
+            raise ValueError(
+                f"apply_pStyle[{idx}] references styleId '{sid}' which is neither "
+                f"in create_styles nor in the document's existing style catalog"
+            )
 
     roles = instructions.get("roles")
     if roles is None or not isinstance(roles, dict):
@@ -639,10 +697,56 @@ def validate_instructions(instructions: Dict[str, Any]) -> None:
             raise ValueError(f"roles['{role}'].styleId must be a non-empty string")
         if not isinstance(ex, int) or ex < 0:
             raise ValueError(f"roles['{role}'].exemplar_paragraph_index must be non-negative int")
+        if total_paragraphs is not None and ex >= total_paragraphs:
+            raise ValueError(
+                f"roles['{role}'].exemplar_paragraph_index ({ex}) out of range "
+                f"(document has {total_paragraphs} paragraphs)"
+            )
         if sid in created_style_src_idx and ex != created_style_src_idx[sid]:
             raise ValueError(
                 f"roles['{role}'] exemplar_paragraph_index ({ex}) must equal derive_from_paragraph_index "
                 f"({created_style_src_idx[sid]}) for created styleId '{sid}'"
+            )
+        # Style reference consistency for roles
+        if slim_bundle is not None and sid not in created_style_ids and sid not in existing_style_ids:
+            raise ValueError(
+                f"roles['{role}'] references styleId '{sid}' which is neither "
+                f"in create_styles nor in the document's existing style catalog"
+            )
+
+    # --- Document-aware checks (require slim_bundle) ---
+    if slim_bundle is not None:
+        paragraphs = slim_bundle.get("paragraphs", [])
+        para_map = {p["paragraph_index"]: p for p in paragraphs}
+
+        # Exemplar quality: role exemplars must not be empty, sectPr, or editor notes
+        for role, spec in roles.items():
+            ex = spec["exemplar_paragraph_index"]
+            if ex in para_map:
+                p = para_map[ex]
+                text = (p.get("text") or "").strip()
+                if not text:
+                    raise ValueError(
+                        f"roles['{role}'] exemplar paragraph {ex} is empty"
+                    )
+                if p.get("contains_sectPr", False):
+                    raise ValueError(
+                        f"roles['{role}'] exemplar paragraph {ex} contains sectPr"
+                    )
+                if text.startswith("[") and text.endswith("]"):
+                    raise ValueError(
+                        f"roles['{role}'] exemplar paragraph {ex} is an editor note"
+                    )
+
+        # Coverage: every classifiable paragraph must have an apply_pStyle entry
+        classifiable = _classifiable_indices(slim_bundle)
+        missing = classifiable - seen_para
+        if missing:
+            sorted_missing = sorted(missing)
+            sample = sorted_missing[:20]
+            raise ValueError(
+                f"Incomplete apply_pStyle coverage: {len(missing)} classifiable paragraph(s) "
+                f"have no style assignment. Missing indices (first 20): {sample}"
             )
 
 

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Phase 1 LLM Instructions (CSI classification output)",
+  "description": "Schema for the JSON instructions returned by the LLM classifier. Defines the contract between the LLM response and the apply pipeline.",
+  "type": "object",
+  "required": ["create_styles", "apply_pStyle", "roles"],
+  "additionalProperties": false,
+  "properties": {
+    "create_styles": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/createStyleEntry" }
+    },
+    "apply_pStyle": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/applyPStyleEntry" }
+    },
+    "roles": { "$ref": "#/$defs/rolesObject" },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "createStyleEntry": {
+      "type": "object",
+      "required": ["styleId", "name", "type", "derive_from_paragraph_index"],
+      "additionalProperties": false,
+      "properties": {
+        "styleId": {
+          "type": "string",
+          "enum": [
+            "CSI_SectionID__ARCH",
+            "CSI_SectionTitle__ARCH",
+            "CSI_SectionName__ARCH",
+            "CSI_Part__ARCH",
+            "CSI_Article__ARCH",
+            "CSI_Paragraph__ARCH",
+            "CSI_Subparagraph__ARCH",
+            "CSI_Subsubparagraph__ARCH"
+          ]
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "const": "paragraph" },
+        "derive_from_paragraph_index": { "type": "integer", "minimum": 0 },
+        "basedOn": { "type": ["string", "null"] },
+        "role": { "type": "string" }
+      }
+    },
+    "applyPStyleEntry": {
+      "type": "object",
+      "required": ["paragraph_index", "styleId"],
+      "additionalProperties": false,
+      "properties": {
+        "paragraph_index": { "type": "integer", "minimum": 0 },
+        "styleId": { "type": "string", "minLength": 1 }
+      }
+    },
+    "roleSpec": {
+      "type": "object",
+      "required": ["styleId", "exemplar_paragraph_index"],
+      "additionalProperties": false,
+      "properties": {
+        "styleId": { "type": "string", "minLength": 1 },
+        "exemplar_paragraph_index": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "rolesObject": {
+      "type": "object",
+      "required": ["SectionTitle", "PART", "ARTICLE", "PARAGRAPH", "SUBPARAGRAPH"],
+      "additionalProperties": false,
+      "properties": {
+        "SectionID": { "$ref": "#/$defs/roleSpec" },
+        "SectionTitle": { "$ref": "#/$defs/roleSpec" },
+        "PART": { "$ref": "#/$defs/roleSpec" },
+        "ARTICLE": { "$ref": "#/$defs/roleSpec" },
+        "PARAGRAPH": { "$ref": "#/$defs/roleSpec" },
+        "SUBPARAGRAPH": { "$ref": "#/$defs/roleSpec" },
+        "SUBSUBPARAGRAPH": { "$ref": "#/$defs/roleSpec" }
+      }
+    }
+  }
+}
